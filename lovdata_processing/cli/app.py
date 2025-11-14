@@ -4,16 +4,16 @@ import asyncio
 
 import typer
 
-from lovdata_processing.config import PipelineConfig
+from lovdata_processing.acquisition.download import download_datasets, get_dataset_metadata
+from lovdata_processing.config import Settings
 from lovdata_processing.domain.services import (
     DatasetUpdateService,
     FileManagementService,
     FileQueryService,
 )
-from lovdata_processing.load.data import download_datasets, get_dataset_metadata
-from lovdata_processing.pipeline import run_pipeline
+from lovdata_processing.orchestrators import DatasetSyncOrchestrator
 from lovdata_processing.state.manager import PipelineStateManager
-from lovdata_processing.ui import RichReporter
+from lovdata_processing.ui import PipelineReporter
 from lovdata_processing.ui.tables import (
     create_file_list_table,
     create_statistics_table,
@@ -33,7 +33,7 @@ def main(ctx: typer.Context) -> None:
         raise typer.Exit()
 
 
-def _perform_download(force: bool, reporter: RichReporter, config: PipelineConfig) -> None:
+def _perform_download(force: bool, reporter: PipelineReporter, config: Settings) -> None:
     """Download datasets according to the current state."""
     update_service = DatasetUpdateService()
 
@@ -78,17 +78,18 @@ def _perform_download(force: bool, reporter: RichReporter, config: PipelineConfi
 @app.command()
 def download(force: bool = typer.Option(False, "--force", help="Redownload all datasets")):
     """Download new or updated datasets without extraction."""
-    reporter = RichReporter()
-    config = PipelineConfig()
+    reporter = PipelineReporter()
+    config = Settings()
     _perform_download(force, reporter, config)
 
 
 @app.command()
 def update(force: bool = typer.Option(False, "--force", help="Force redownload before update")):
     """Download and extract datasets, updating state."""
-    reporter = RichReporter()
-    config = PipelineConfig()
-    run_pipeline(config=config, reporter=reporter, force_download=force)
+    reporter = PipelineReporter()
+    config = Settings()
+    orchestrator = DatasetSyncOrchestrator(config)
+    orchestrator.sync_datasets(reporter=reporter, force_download=force)
 
 
 # Files subcommands
@@ -104,8 +105,8 @@ def files_list(
     limit: int = typer.Option(None, "--limit", "-n", help="Limit number of results"),
 ):
     """List files in state with optional filtering."""
-    config = PipelineConfig()
-    reporter = RichReporter()
+    config = Settings()
+    reporter = PipelineReporter()
 
     valid_statuses = {"added", "modified", "unchanged", "removed", "changed"}
     if status and status not in valid_statuses:
@@ -140,8 +141,8 @@ def files_stats(
     dataset: str = typer.Option(None, "--dataset", "-d", help="Filter by dataset name"),
 ):
     """Show statistics about files in state."""
-    config = PipelineConfig()
-    reporter = RichReporter()
+    config = Settings()
+    reporter = PipelineReporter()
 
     with PipelineStateManager(config.state_file) as state:
         # Use service to calculate statistics
@@ -164,8 +165,8 @@ def files_prune(
     ),
 ):
     """Remove files marked as REMOVED from state and disk."""
-    config = PipelineConfig()
-    reporter = RichReporter()
+    config = Settings()
+    reporter = PipelineReporter()
 
     with PipelineStateManager(config.state_file) as state:
         # Use service to perform prune operation

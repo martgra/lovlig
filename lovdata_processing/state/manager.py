@@ -25,8 +25,6 @@ class PipelineStateManager:
                 state.update_state("path/to/file", new_hash)
     """
 
-    LEGACY_FILE_FIELDS = {"fast_hash", "modified"}
-
     def __init__(self, path: str | Path):
         """Initialize FileState manager.
 
@@ -127,7 +125,7 @@ class PipelineStateManager:
 
     @classmethod
     def _sanitize_raw_state(cls, payload: Any) -> dict[str, Any]:
-        """Remove legacy file fields and ensure schema-compatibility."""
+        """Ensure schema-compatibility of state data."""
         if not isinstance(payload, dict):
             return {"raw_datasets": {}}
 
@@ -135,32 +133,7 @@ class PipelineStateManager:
         if not isinstance(raw_datasets, dict):
             raw_datasets = {}
 
-        sanitized_datasets: dict[str, Any] = {}
-
-        for dataset_key, dataset_value in raw_datasets.items():
-            if not isinstance(dataset_value, dict):
-                continue
-
-            dataset_copy = dict(dataset_value)
-            files = dataset_value.get("files")
-            if not isinstance(files, dict):
-                files = {}
-
-            sanitized_files: dict[str, Any] = {}
-            for file_key, file_metadata in files.items():
-                if not isinstance(file_metadata, dict):
-                    continue
-
-                sanitized_metadata = {
-                    key: value
-                    for key, value in file_metadata.items()
-                    if key not in cls.LEGACY_FILE_FIELDS
-                }
-                sanitized_files[file_key] = sanitized_metadata
-
-            dataset_copy["files"] = sanitized_files
-            sanitized_datasets[dataset_key] = dataset_copy
-
+        # Validate structure but don't modify data
         sanitized_payload = dict(payload)
-        sanitized_payload["raw_datasets"] = sanitized_datasets
+        sanitized_payload["raw_datasets"] = raw_datasets
         return sanitized_payload

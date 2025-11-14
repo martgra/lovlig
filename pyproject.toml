@@ -14,6 +14,7 @@ dependencies = [
     "pydantic-settings>=2.12.0",
     "rich>=14.2.0",
     "typer>=0.20.0",
+    "xxhash>=3.4.0",
 ]
 
 [project.scripts]

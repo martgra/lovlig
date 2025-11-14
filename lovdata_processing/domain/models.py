@@ -21,7 +21,7 @@ class FileMetadata(BaseModel):
 
     path: str  # Relative path within archive
     size: int  # File size in bytes
-    sha256: str  # SHA256 hash of file contents
+    sha256: str  # File content hash (xxHash128)
     last_changed: datetime | None = None  # Dataset API version when this file was added/modified
     status: FileStatus = FileStatus.UNCHANGED  # Current lifecycle status
 

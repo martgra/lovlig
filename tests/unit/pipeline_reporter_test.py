@@ -6,10 +6,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from lovdata_processing.config import PipelineConfig
+from lovdata_processing.config import Settings
 from lovdata_processing.domain.models import RawDatasetMetadata
-from lovdata_processing.pipeline import process_archives, run_pipeline
-from lovdata_processing.ui import SilentReporter
+from lovdata_processing.orchestrators import DatasetSyncOrchestrator, ExtractionOrchestrator
+from lovdata_processing.ui import PipelineReporter
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ def sample_datasets():
 
 
 def test_process_archives_with_silent_reporter(mock_state, sample_datasets, tmp_path):
-    """Test process_archives runs successfully with SilentReporter."""
+    """Test process_archives runs successfully with PipelineReporter."""
     # Setup
     raw_dir = tmp_path / "raw"
     raw_dir.mkdir()
@@ -51,20 +51,21 @@ def test_process_archives_with_silent_reporter(mock_state, sample_datasets, tmp_
     mock_state.get_file_metadata.return_value = {}
 
     # Mock the extractor to return fake data
-    with patch("lovdata_processing.pipeline.extract_tar_bz2_incremental") as mock_extractor:
+    with patch("lovdata_processing.orchestrators.extraction.extract_tar_bz2_incremental") as mock_extractor:
         mock_extractor.return_value = ({}, mock_changeset)
 
-        reporter = SilentReporter()
-        config = PipelineConfig()
+        reporter = PipelineReporter(silent=True)
+        config = Settings(
+            raw_data_dir=raw_dir,
+            extracted_data_dir=extracted_dir,
+        )
+        orchestrator = ExtractionOrchestrator(config)
 
         # Execute
-        results = process_archives(
+        results = orchestrator.process_archives(
             mock_state,
             sample_datasets,
-            raw_dir,
-            extracted_dir,
             reporter,
-            config,
         )
 
         # Verify
@@ -96,17 +97,19 @@ def test_process_archives_without_reporter(mock_state, sample_datasets, tmp_path
     mock_state.get_file_metadata.return_value = {}
 
     # Mock the extractor to return fake data
-    with patch("lovdata_processing.pipeline.extract_tar_bz2_incremental") as mock_extractor:
+    with patch("lovdata_processing.orchestrators.extraction.extract_tar_bz2_incremental") as mock_extractor:
         mock_extractor.return_value = ({}, mock_changeset)
 
         # Execute without reporter
-        results = process_archives(
+        config = Settings(
+            raw_data_dir=raw_dir,
+            extracted_data_dir=extracted_dir,
+        )
+        orchestrator = ExtractionOrchestrator(config)
+        results = orchestrator.process_archives(
             mock_state,
             sample_datasets,
-            raw_dir,
-            extracted_dir,
             reporter=None,
-            config=PipelineConfig(),
         )
 
         # Verify
@@ -130,17 +133,18 @@ def test_process_archives_missing_file(mock_state, sample_datasets, tmp_path):
 
     # Don't create the archive file
 
-    reporter = SilentReporter()
-    config = PipelineConfig()
+    reporter = PipelineReporter(silent=True)
+    config = Settings(
+        raw_data_dir=raw_dir,
+        extracted_data_dir=extracted_dir,
+    )
+    orchestrator = ExtractionOrchestrator(config)
 
     # Execute
-    results = process_archives(
+    results = orchestrator.process_archives(
         mock_state,
         sample_datasets,
-        raw_dir,
-        extracted_dir,
         reporter,
-        config,
     )
 
     # Verify
@@ -151,13 +155,13 @@ def test_process_archives_missing_file(mock_state, sample_datasets, tmp_path):
     mock_state.update_file_metadata.assert_not_called()
 
 
-@patch("lovdata_processing.pipeline.get_dataset_metadata")
-@patch("lovdata_processing.pipeline.PipelineStateManager")
-@patch("lovdata_processing.pipeline.download_datasets")
+@patch("lovdata_processing.orchestrators.dataset_sync.get_dataset_metadata")
+@patch("lovdata_processing.state.manager.PipelineStateManager")
+@patch("lovdata_processing.orchestrators.dataset_sync.download_datasets")
 def test_run_pipeline_with_silent_reporter(
     mock_download, mock_state_manager_class, mock_get_metadata, tmp_path
 ):
-    """Test run_pipeline with SilentReporter for headless execution."""
+    """Test run_pipeline with PipelineReporter for headless execution."""
     # Setup
     mock_datasets = {
         "dataset1": RawDatasetMetadata(
@@ -175,11 +179,12 @@ def test_run_pipeline_with_silent_reporter(
     mock_state_manager_class.return_value.__enter__.return_value = mock_state
     mock_state_manager_class.return_value.__exit__.return_value = None
 
-    reporter = SilentReporter()
-    config = PipelineConfig()
+    reporter = PipelineReporter(silent=True)
+    config = Settings()
+    orchestrator = DatasetSyncOrchestrator(config)
 
     # Execute
-    run_pipeline(config=config, reporter=reporter)
+    orchestrator.sync_datasets(reporter=reporter)
 
     # Verify no errors occurred
     mock_get_metadata.assert_called_once()
@@ -188,8 +193,8 @@ def test_run_pipeline_with_silent_reporter(
 
 
 def test_silent_reporter_no_output(capsys):
-    """Test that SilentReporter produces no output."""
-    reporter = SilentReporter()
+    """Test that PipelineReporter produces no output."""
+    reporter = PipelineReporter(silent=True)
 
     # Call all reporter methods
     reporter.report_datasets_to_update(5)
@@ -212,8 +217,8 @@ def test_silent_reporter_no_output(capsys):
 
 
 def test_silent_reporter_context_managers():
-    """Test that SilentReporter context managers work correctly."""
-    reporter = SilentReporter()
+    """Test that PipelineReporter context managers work correctly."""
+    reporter = PipelineReporter(silent=True)
 
     # Test download context
     with reporter.download_context() as ctx:

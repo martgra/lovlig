@@ -1,4 +1,7 @@
-"""loading module."""
+"""Dataset download operations.
+
+Public API for downloading datasets from Lovdata API.
+"""
 
 import asyncio
 from pathlib import Path

@@ -217,8 +217,9 @@ class FileManagementService:
                     for path in removed_files:
                         del dataset_metadata.files[path]
 
-                    # Remove from disk
-                    dataset_extract_dir = extract_root_dir / Path(dataset_metadata.filename).stem
+                    # Remove from disk (remove .tar.bz2 extension)
+                    dataset_name = Path(dataset_metadata.filename).stem.removesuffix(".tar")
+                    dataset_extract_dir = extract_root_dir / dataset_name
                     for path in removed_files:
                         file_path = dataset_extract_dir / path
                         if file_path.exists():

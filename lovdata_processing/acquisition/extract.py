@@ -1,7 +1,9 @@
-"""Archive extraction and file change detection."""
+"""Archive extraction and file change detection.
+
+Public API for extracting tar.bz2 archives with incremental change detection.
+"""
 
 import bz2
-import hashlib
 import os
 import shutil
 import tarfile
@@ -10,6 +12,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from logging import Logger
 from pathlib import Path
+
+import xxhash
 
 from lovdata_processing.domain.models import ArchiveChangeSet, FileMetadata, FileStatus
 from lovdata_processing.domain.types import ExtractionProgressHook
@@ -37,21 +41,21 @@ def _safe_extract_member(tar: tarfile.TarFile, member: tarfile.TarInfo, extract_
 logger = Logger(__file__)
 
 
-def compute_sha256(file_path: Path, chunk_size: int = 64 * 1024) -> str:
-    """Compute SHA256 hash of a file.
+def compute_file_hash(file_path: Path, chunk_size: int = 64 * 1024) -> str:
+    """Compute xxHash of a file.
 
     Args:
         file_path: Path to the file
         chunk_size: Size of chunks to read (default 64KB)
 
     Returns:
-        Hexadecimal SHA256 hash string
+        Hexadecimal hash string (32 characters)
     """
-    sha256_hash = hashlib.sha256()
+    hasher = xxhash.xxh128()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(chunk_size), b""):
-            sha256_hash.update(chunk)
-    return sha256_hash.hexdigest()
+            hasher.update(chunk)
+    return hasher.hexdigest()
 
 
 def _resolve_worker_count(max_hash_workers: int | None) -> int:
@@ -72,8 +76,10 @@ def _process_extracted_file(
     changeset: ArchiveChangeSet,
     state_lock: threading.Lock,
 ):
-    """Compute hashes for a file and update shared state safely."""
-    file_hash = compute_sha256(extracted_path)
+    """Compute hash for a file and update shared state safely."""
+    file_hash = compute_file_hash(extracted_path)
+
+    # Determine if file was modified
     is_modified = bool(previous_meta and not is_new and previous_meta.sha256 != file_hash)
 
     # Use dataset's API timestamp for new/modified files, preserve previous for unchanged

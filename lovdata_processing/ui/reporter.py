@@ -1,6 +1,4 @@
-"""Reporter abstraction for pipeline output and progress tracking."""
-
-from abc import ABC, abstractmethod
+"""Reporter for pipeline output and progress tracking."""
 
 from rich.console import Console
 from rich.progress import (
@@ -15,68 +13,19 @@ from rich.progress import (
 from lovdata_processing.domain.models import ArchiveChangeSet
 
 
-class PipelineReporter(ABC):
-    """Abstract interface for reporting pipeline progress and results."""
-
-    @abstractmethod
-    def report_datasets_to_update(self, count: int) -> None:
-        """Report how many datasets need updating."""
-        pass
-
-    @abstractmethod
-    def create_download_progress_hook(self, filename: str):
-        """Create a progress hook for downloading a specific file."""
-        pass
-
-    @abstractmethod
-    def download_context(self):
-        """Context manager for download progress display."""
-        pass
-
-    @abstractmethod
-    def create_extraction_progress_hook(self):
-        """Create a progress hook for extraction."""
-        pass
-
-    @abstractmethod
-    def extraction_context(self):
-        """Context manager for extraction progress display."""
-        pass
-
-    @abstractmethod
-    def start_extraction(self, dataset_key: str) -> None:
-        """Signal the start of extraction for a dataset."""
-        pass
-
-    @abstractmethod
-    def complete_extraction(self) -> None:
-        """Signal completion of current extraction."""
-        pass
-
-    @abstractmethod
-    def report_changeset(self, dataset_key: str, changeset: ArchiveChangeSet) -> None:
-        """Report the changeset results."""
-        pass
-
-    @abstractmethod
-    def report_warning(self, message: str) -> None:
-        """Report a warning message."""
-        pass
-
-    @abstractmethod
-    def report_archive_not_found(self, archive_path) -> None:
-        """Report that an archive file was not found."""
-        pass
-
-
-class RichReporter(PipelineReporter):
-    """Rich-based reporter with progress bars and formatted output."""
+class PipelineReporter:
+    """Pipeline reporter with rich progress bars and formatted output."""
 
     CHANGE_PREVIEW_LIMIT = 10
 
-    def __init__(self) -> None:
-        """Initialize Rich reporter with console and progress trackers."""
-        self.console = Console()
+    def __init__(self, silent: bool = False) -> None:
+        """Initialize reporter.
+
+        Args:
+            silent: If True, suppress all output (for testing/automation).
+        """
+        self.silent = silent
+        self.console = Console(quiet=silent)
         self._download_progress: Progress | None = None
         self._download_tasks: dict[str, int] = {}
         self._extraction_progress: Progress | None = None
@@ -84,10 +33,18 @@ class RichReporter(PipelineReporter):
 
     def report_datasets_to_update(self, count: int) -> None:
         """Report how many datasets need updating."""
-        self.console.print(f"Downloading {count} updated datasets...")
+        if not self.silent:
+            self.console.print(f"Downloading {count} updated datasets...")
 
     def create_download_progress_hook(self, filename: str):
         """Create a progress hook for downloading a specific file."""
+        if self.silent:
+
+            def hook(downloaded: int, total: int | None) -> None:
+                pass
+
+            return hook
+
         if self._download_progress is None:
             raise RuntimeError("Must be called within download_context")
 
@@ -112,6 +69,16 @@ class RichReporter(PipelineReporter):
 
     def download_context(self):
         """Context manager for download progress display."""
+        if self.silent:
+
+            class NoOpContext:
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *args):
+                    pass
+
+            return NoOpContext()
 
         class DownloadContext:
             def __init__(ctx_self, reporter):
@@ -139,6 +106,13 @@ class RichReporter(PipelineReporter):
 
     def create_extraction_progress_hook(self):
         """Create a progress hook for extraction."""
+        if self.silent:
+
+            def hook(filename: str, current: int, total: int) -> None:
+                pass
+
+            return hook
+
         if self._extraction_progress is None:
             raise RuntimeError("Must be called within extraction_context")
 
@@ -155,6 +129,16 @@ class RichReporter(PipelineReporter):
 
     def extraction_context(self):
         """Context manager for extraction progress display."""
+        if self.silent:
+
+            class NoOpContext:
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *args):
+                    pass
+
+            return NoOpContext()
 
         class ExtractionContext:
             def __init__(ctx_self, reporter):
@@ -182,6 +166,9 @@ class RichReporter(PipelineReporter):
 
     def start_extraction(self, dataset_key: str) -> None:
         """Signal the start of extraction for a dataset."""
+        if self.silent:
+            return
+
         if self._extraction_progress is None:
             raise RuntimeError("Must be called within extraction_context")
 
@@ -191,6 +178,9 @@ class RichReporter(PipelineReporter):
 
     def complete_extraction(self) -> None:
         """Signal completion of current extraction."""
+        if self.silent:
+            return
+
         if self._extraction_progress is not None and self._extraction_task_id is not None:
             total = self._extraction_progress.tasks[self._extraction_task_id].total
             if total is not None:
@@ -198,6 +188,9 @@ class RichReporter(PipelineReporter):
 
     def report_changeset(self, dataset_key: str, changeset: "ArchiveChangeSet") -> None:
         """Report the changeset results."""
+        if self.silent:
+            return
+
         if changeset.has_changes:
             self.console.print(f"\n[bold]{dataset_key}[/bold] - Changes detected")
             self._render_file_list(
@@ -230,11 +223,18 @@ class RichReporter(PipelineReporter):
 
     def report_warning(self, message: str) -> None:
         """Report a warning message."""
-        self.console.print(f"\n[yellow]Warning:[/yellow] {message}")
+        if not self.silent:
+            self.console.print(f"\n[yellow]Warning:[/yellow] {message}")
+
+    def report_error(self, message: str) -> None:
+        """Report an error message."""
+        if not self.silent:
+            self.console.print(f"\n[red]Error:[/red] {message}")
 
     def report_archive_not_found(self, archive_path) -> None:
         """Report that an archive file was not found."""
-        self.report_warning(f"Archive not found: {archive_path}")
+        if not self.silent:
+            self.report_warning(f"Archive not found: {archive_path}")
 
     def _render_file_list(
         self,
@@ -256,71 +256,3 @@ class RichReporter(PipelineReporter):
         remaining = count - len(preview)
         if remaining > 0:
             self.console.print(f"      ... (+{remaining} more)")
-
-
-class SilentReporter(PipelineReporter):
-    """Silent reporter that suppresses all output (for testing/automation)."""
-
-    def report_datasets_to_update(self, count: int) -> None:
-        """Report how many datasets need updating."""
-        pass
-
-    def create_download_progress_hook(self, filename: str):
-        """Create a no-op progress hook."""
-
-        def hook(downloaded: int, total: int | None) -> None:
-            pass
-
-        return hook
-
-    def download_context(self):
-        """No-op context manager."""
-
-        class NoOpContext:
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *args):
-                pass
-
-        return NoOpContext()
-
-    def create_extraction_progress_hook(self):
-        """Create a no-op progress hook."""
-
-        def hook(filename: str, current: int, total: int) -> None:
-            pass
-
-        return hook
-
-    def extraction_context(self):
-        """No-op context manager."""
-
-        class NoOpContext:
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *args):
-                pass
-
-        return NoOpContext()
-
-    def start_extraction(self, dataset_key: str) -> None:
-        """Signal the start of extraction for a dataset."""
-        pass
-
-    def complete_extraction(self) -> None:
-        """Signal completion of current extraction."""
-        pass
-
-    def report_changeset(self, dataset_key: str, changeset: ArchiveChangeSet) -> None:
-        """Report the changeset results."""
-        pass
-
-    def report_warning(self, message: str) -> None:
-        """Report a warning message."""
-        pass
-
-    def report_archive_not_found(self, archive_path) -> None:
-        """Report that an archive file was not found."""
-        pass
