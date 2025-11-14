@@ -1,3 +1,6 @@
-"""Main module."""
+"""Command-line entrypoint that defers to the Typer CLI."""
 
-print("Hello python")
+from lovdata_processing.cli.app import app
+
+if __name__ == "__main__":
+    app()
