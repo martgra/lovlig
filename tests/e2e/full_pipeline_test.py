@@ -12,9 +12,9 @@ from pathlib import Path
 
 import pytest
 
-from lovdata_processing.domain.models import FileMetadata, FileStatus, RawDatasetMetadata
-from lovdata_processing.acquisition.extract import extract_tar_bz2
-from lovdata_processing.state.manager import PipelineStateManager
+from lovdata_processing.domain.models import FileMetadata, FileStatus, DatasetMetadata
+from lovdata_processing.operations.extract import extract_tar_bz2
+from lovdata_processing.state.manager import StateManager
 
 
 def create_tar_bz2_with_files(archive_path: Path, files: dict[str, bytes]) -> None:
@@ -111,8 +111,8 @@ class TestFullPipelineWorkflow:
         )
 
         # Save to state
-        with PipelineStateManager(state_file) as manager:
-            dataset_metadata = RawDatasetMetadata(
+        with StateManager(state_file) as manager:
+            dataset_metadata = DatasetMetadata(
                 filename=Path(dataset_key),
                 last_modified=datetime(2024, 1, 1),
                 files=current_files,
@@ -123,7 +123,7 @@ class TestFullPipelineWorkflow:
         assert state_file.exists()
 
         # Load state in new session
-        with PipelineStateManager(state_file) as manager:
+        with StateManager(state_file) as manager:
             assert dataset_key in manager.data.raw_datasets
             loaded_files = manager.data.raw_datasets[dataset_key].files
             assert len(loaded_files) == 3
@@ -205,8 +205,8 @@ class TestFullPipelineWorkflow:
             dataset_version=datetime(2024, 1, 1),
         )
 
-        with PipelineStateManager(state_file) as manager:
-            dataset_metadata = RawDatasetMetadata(
+        with StateManager(state_file) as manager:
+            dataset_metadata = DatasetMetadata(
                 filename=Path(dataset_key),
                 last_modified=datetime(2024, 1, 1),
                 files=current_files,
@@ -214,7 +214,7 @@ class TestFullPipelineWorkflow:
             manager.data.raw_datasets[dataset_key] = dataset_metadata
 
         # Cycle 2: Reload and re-extract (unchanged)
-        with PipelineStateManager(state_file) as manager:
+        with StateManager(state_file) as manager:
             previous_files = manager.data.raw_datasets[dataset_key].files
 
         current_files_v2, changeset_v2 = extract_tar_bz2(

@@ -7,9 +7,9 @@ Quick Start (High-Level API):
     >>> sync_datasets()  # Downloads and extracts all datasets
 
 Quick Start (SDK API):
-    >>> from lovdata_processing import DatasetSyncOrchestrator, Settings
+    >>> from lovdata_processing import DatasetSync, Settings
     >>> config = Settings(dataset_filter="gjeldende")
-    >>> orchestrator = DatasetSyncOrchestrator(config)
+    >>> orchestrator = DatasetSync(config)
     >>> orchestrator.sync_datasets()
 
 Configuration:
@@ -31,8 +31,8 @@ Public API:
         - extract_archives: Extract archives with change detection
 
     Orchestrators:
-        - DatasetSyncOrchestrator: Full pipeline orchestration
-        - ExtractionOrchestrator: Archive extraction orchestration
+        - DatasetSync: Full pipeline orchestration
+        - Extraction: Archive extraction orchestration
 
     Configuration:
         - Settings: Configuration model
@@ -40,15 +40,15 @@ Public API:
     Domain Models:
         - FileMetadata: File metadata with hash and status
         - FileStatus: File status enum (ADDED, MODIFIED, UNCHANGED, REMOVED)
-        - RawDatasetMetadata: Dataset metadata
-        - PipelineState: Complete pipeline state
+        - DatasetMetadata: Dataset metadata
+        - State: Complete pipeline state
         - ArchiveChangeSet: Archive changes summary
 
     State Management:
-        - PipelineStateManager: State persistence manager
+        - StateManager: State persistence manager
 
     Reporters (for custom UIs):
-        - PipelineReporter: Progress reporter (use silent=True for headless mode)
+        - Reporter: Progress reporter (use silent=True for headless mode)
 """
 
 # Configuration
@@ -59,38 +59,38 @@ from lovdata_processing.domain import (
     ArchiveChangeSet,
     FileMetadata,
     FileStatus,
-    PipelineState,
-    RawDatasetMetadata,
+    State,
+    DatasetMetadata,
 )
 
 # Orchestrators
-from lovdata_processing.orchestrators import DatasetSyncOrchestrator, ExtractionOrchestrator
+from lovdata_processing.orchestrators import DatasetSync, Extraction
 
 # State management
-from lovdata_processing.state.manager import PipelineStateManager
+from lovdata_processing.state.manager import StateManager
 
 # UI Reporters
-from lovdata_processing.ui import PipelineReporter
+from lovdata_processing.ui import Reporter
 
 __all__ = [
     # High-level functions
     "sync_datasets",
     "extract_archives",
     # Orchestrators
-    "DatasetSyncOrchestrator",
-    "ExtractionOrchestrator",
+    "DatasetSync",
+    "Extraction",
     # Configuration
     "Settings",
     # Domain models
     "FileMetadata",
     "FileStatus",
-    "RawDatasetMetadata",
-    "PipelineState",
+    "DatasetMetadata",
+    "State",
     "ArchiveChangeSet",
     # State management
-    "PipelineStateManager",
+    "StateManager",
     # Reporters
-    "PipelineReporter",
+    "Reporter",
 ]
 
 # Version
@@ -100,7 +100,7 @@ __version__ = "0.1.0"
 # High-level convenience functions
 def sync_datasets(
     config: Settings | None = None,
-    reporter: PipelineReporter | None = None,
+    reporter: Reporter | None = None,
     force_download: bool = False,
 ) -> None:
     """Run complete dataset synchronization (high-level convenience function).
@@ -111,7 +111,7 @@ def sync_datasets(
 
     Args:
         config: Pipeline configuration. If None, uses global config.
-        reporter: Progress reporter. If None, uses PipelineReporter().
+        reporter: Progress reporter. If None, uses Reporter().
         force_download: Redownload all datasets regardless of timestamps.
 
     Example:
@@ -122,34 +122,34 @@ def sync_datasets(
         >>> config = Settings(dataset_filter="gjeldende")
         >>> sync_datasets(config=config, force_download=True)
     """
-    orchestrator = DatasetSyncOrchestrator(config)
+    orchestrator = DatasetSync(config)
     orchestrator.sync_datasets(reporter=reporter, force_download=force_download)
 
 
 def extract_archives(
     datasets: dict,
     config: Settings | None = None,
-    reporter: PipelineReporter | None = None,
+    reporter: Reporter | None = None,
 ) -> dict:
     """Extract archives with change detection (high-level convenience function).
 
     Args:
-        datasets: Dictionary mapping dataset keys to RawDatasetMetadata
+        datasets: Dictionary mapping dataset keys to DatasetMetadata
         config: Pipeline configuration. If None, uses global config.
-        reporter: Progress reporter. If None, uses PipelineReporter().
+        reporter: Progress reporter. If None, uses Reporter().
 
     Returns:
         Dictionary mapping dataset keys to extraction results
 
     Example:
         >>> from lovdata_processing import extract_archives, Settings
-        >>> from lovdata_processing.state.manager import PipelineStateManager
+        >>> from lovdata_processing.state.manager import StateManager
         >>> config = Settings()
-        >>> with PipelineStateManager(config.state_file) as state:
+        >>> with StateManager(config.state_file) as state:
         ...     results = extract_archives(datasets, config)
     """
-    orchestrator = ExtractionOrchestrator(config)
+    orchestrator = Extraction(config)
     config_obj = config if config is not None else Settings()
 
-    with PipelineStateManager(config_obj.state_file) as state:
+    with StateManager(config_obj.state_file) as state:
         return orchestrator.process_archives(state, datasets, reporter)

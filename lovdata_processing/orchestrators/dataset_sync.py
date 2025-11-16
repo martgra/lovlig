@@ -5,15 +5,15 @@ Coordinates the complete end-to-end dataset synchronization workflow.
 
 import asyncio
 
-from lovdata_processing.acquisition.download import download_datasets, get_dataset_metadata
+from lovdata_processing.operations.download import download_datasets, fetch_datasets
 from lovdata_processing.config import Settings
 from lovdata_processing.domain.services import DatasetUpdateService
-from lovdata_processing.orchestrators.extraction import ExtractionOrchestrator
-from lovdata_processing.state.manager import PipelineStateManager
-from lovdata_processing.ui import PipelineReporter
+from lovdata_processing.orchestrators.extraction import Extraction
+from lovdata_processing.state.manager import StateManager
+from lovdata_processing.ui import Reporter
 
 
-class DatasetSyncOrchestrator:
+class DatasetSync:
     """Orchestrates the complete dataset synchronization workflow.
 
     This orchestrator coordinates the entire pipeline:
@@ -32,25 +32,25 @@ class DatasetSyncOrchestrator:
         """
         self.config = config if config is not None else Settings()
         self.update_service = DatasetUpdateService()
-        self.extraction_orchestrator = ExtractionOrchestrator(self.config)
+        self.extraction_orchestrator = Extraction(self.config)
 
     def sync_datasets(
         self,
-        reporter: PipelineReporter | None = None,
+        reporter: Reporter | None = None,
         force_download: bool = False,
     ) -> None:
         """Run the complete dataset synchronization workflow.
 
         Args:
-            reporter: Optional reporter for progress. Defaults to PipelineReporter().
+            reporter: Optional reporter for progress. Defaults to Reporter().
             force_download: Redownload all datasets regardless of timestamps.
         """
         if reporter is None:
-            reporter = PipelineReporter()
+            reporter = Reporter()
 
-        with PipelineStateManager(self.config.state_file) as state:
+        with StateManager(self.config.state_file) as state:
             # Step 1: Fetch current metadata from API
-            datasets = get_dataset_metadata(self.config.api_url, self.config.dataset_filter)
+            datasets = fetch_datasets(self.config.api_url, self.config.dataset_filter)
 
             # Step 2: Determine which datasets need updates
             if force_download:
@@ -86,7 +86,7 @@ class DatasetSyncOrchestrator:
     def _download_datasets(
         self,
         datasets_to_update: dict,
-        reporter: PipelineReporter,
+        reporter: Reporter,
     ) -> None:
         """Download datasets with progress tracking.
 
@@ -116,8 +116,8 @@ class DatasetSyncOrchestrator:
     def _cleanup_removed_datasets(
         self,
         current_datasets: dict,
-        state: PipelineStateManager,
-        reporter: PipelineReporter,
+        state: StateManager,
+        reporter: Reporter,
     ) -> None:
         """Remove datasets from state that no longer exist in API.
 
@@ -137,7 +137,7 @@ class DatasetSyncOrchestrator:
     def _ensure_datasets_in_state(
         self,
         datasets: dict,
-        state: PipelineStateManager,
+        state: StateManager,
     ) -> None:
         """Ensure all current datasets exist in state.
 

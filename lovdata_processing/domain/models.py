@@ -26,7 +26,7 @@ class FileMetadata(BaseModel):
     status: FileStatus = FileStatus.UNCHANGED  # Current lifecycle status
 
 
-class RawDatasetMetadata(BaseModel):
+class DatasetMetadata(BaseModel):
     """Dataset metadata."""
 
     filename: Path
@@ -34,10 +34,10 @@ class RawDatasetMetadata(BaseModel):
     files: dict[str, FileMetadata] = Field(default_factory=dict)
 
 
-class PipelineState(BaseModel):
+class State(BaseModel):
     """Complete pipeline state."""
 
-    raw_datasets: dict[str, RawDatasetMetadata] = Field(default_factory=dict)
+    raw_datasets: dict[str, DatasetMetadata] = Field(default_factory=dict)
 
 
 class ArchiveChangeSet(BaseModel):

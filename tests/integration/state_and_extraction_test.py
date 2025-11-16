@@ -8,11 +8,11 @@ from pathlib import Path
 import pytest
 
 from lovdata_processing.config import Settings
-from lovdata_processing.domain.models import FileStatus, RawDatasetMetadata
+from lovdata_processing.domain.models import FileStatus, DatasetMetadata
 from lovdata_processing.domain.services import ArchiveProcessingService
-from lovdata_processing.acquisition.extract import extract_tar_bz2_incremental
-from lovdata_processing.orchestrators import ExtractionOrchestrator
-from lovdata_processing.state.manager import PipelineStateManager
+from lovdata_processing.operations.extract import extract_tar_bz2_incremental
+from lovdata_processing.orchestrators import Extraction
+from lovdata_processing.state.manager import StateManager
 
 
 class TestStateAndExtraction:
@@ -40,11 +40,11 @@ class TestStateAndExtraction:
                     tar.add(xml_file, arcname=xml_file.name)
 
         # Process with state manager
-        with PipelineStateManager(state_file) as state:
+        with StateManager(state_file) as state:
             # Initialize dataset
             state.update_dataset_metadata(
                 "test-dataset.tar.bz2",
-                RawDatasetMetadata(
+                DatasetMetadata(
                     filename=Path("test-dataset.tar.bz2"),
                     last_modified=datetime(2024, 1, 1),
                     files={},
@@ -66,7 +66,7 @@ class TestStateAndExtraction:
         assert state_file.exists()
 
         # Reload and verify
-        with PipelineStateManager(state_file) as state:
+        with StateManager(state_file) as state:
             files = state.get_file_metadata("test-dataset.tar.bz2")
             assert len(files) == 2
             assert "doc1.xml" in files
@@ -93,10 +93,10 @@ class TestStateAndExtraction:
                 tar.add(archive_content / "same.xml", arcname="same.xml")
 
         # First extraction
-        with PipelineStateManager(state_file) as state:
+        with StateManager(state_file) as state:
             state.update_dataset_metadata(
                 "test.tar.bz2",
-                RawDatasetMetadata(
+                DatasetMetadata(
                     filename=Path("test.tar.bz2"),
                     last_modified=datetime(2024, 1, 1),
                     files={},
@@ -112,7 +112,7 @@ class TestStateAndExtraction:
             state.update_file_metadata("test.tar.bz2", files1)
 
         # Second extraction
-        with PipelineStateManager(state_file) as state:
+        with StateManager(state_file) as state:
             previous = state.get_file_metadata("test.tar.bz2")
 
             files2, changeset = extract_tar_bz2_incremental(
@@ -146,10 +146,10 @@ class TestStateAndExtraction:
                 tar.add(archive_content / "file.xml", arcname="file.xml")
 
         # First extraction
-        with PipelineStateManager(state_file) as state:
+        with StateManager(state_file) as state:
             state.update_dataset_metadata(
                 "test.tar.bz2",
-                RawDatasetMetadata(
+                DatasetMetadata(
                     filename=Path("test.tar.bz2"),
                     last_modified=datetime(2024, 1, 1),
                     files={},
@@ -171,7 +171,7 @@ class TestStateAndExtraction:
                 tar.add(archive_content / "file.xml", arcname="file.xml")
 
         # Second extraction
-        with PipelineStateManager(state_file) as state:
+        with StateManager(state_file) as state:
             previous = state.get_file_metadata("test.tar.bz2")
 
             files2, changeset = extract_tar_bz2_incremental(
@@ -204,20 +204,20 @@ class TestStateAndExtraction:
         archive_in_raw.write_bytes(sample_tar_archive.read_bytes())
 
         datasets = {
-            "my-dataset.tar.bz2": RawDatasetMetadata(
+            "my-dataset.tar.bz2": DatasetMetadata(
                 filename=Path("my-dataset.tar.bz2"),
                 last_modified=datetime(2024, 1, 1),
                 files={},
             )
         }
 
-        with PipelineStateManager(state_file) as state:
+        with StateManager(state_file) as state:
             # Initialize dataset in state
             for key, metadata in datasets.items():
                 state.update_dataset_metadata(key, metadata)
 
             # Process archives (this uses the directory naming logic)
-            orchestrator = ExtractionOrchestrator(config)
+            orchestrator = Extraction(config)
             results = orchestrator.process_archives(
                 state=state,
                 datasets=datasets,

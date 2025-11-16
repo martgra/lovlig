@@ -4,16 +4,16 @@ from lovdata_processing.domain.models import (
     ArchiveChangeSet,
     FileMetadata,
     FileStatus,
-    PipelineState,
-    RawDatasetMetadata,
+    State,
+    DatasetMetadata,
 )
 from lovdata_processing.domain.types import DownloadProgressHook, ExtractionProgressHook
 
 __all__ = [
     "FileMetadata",
     "FileStatus",
-    "RawDatasetMetadata",
-    "PipelineState",
+    "DatasetMetadata",
+    "State",
     "ArchiveChangeSet",
     "DownloadProgressHook",
     "ExtractionProgressHook",

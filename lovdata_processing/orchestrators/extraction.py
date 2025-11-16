@@ -6,15 +6,15 @@ Coordinates the extraction of datasets and file-level change detection.
 from functools import partial
 from pathlib import Path
 
-from lovdata_processing.acquisition.extract import extract_tar_bz2_incremental
+from lovdata_processing.operations.extract import extract_tar_bz2_incremental
 from lovdata_processing.config import Settings
-from lovdata_processing.domain.models import RawDatasetMetadata
+from lovdata_processing.domain.models import DatasetMetadata
 from lovdata_processing.domain.services import ArchiveProcessingService
-from lovdata_processing.state.manager import PipelineStateManager
-from lovdata_processing.ui import PipelineReporter
+from lovdata_processing.state.manager import StateManager
+from lovdata_processing.ui import Reporter
 
 
-class ExtractionOrchestrator:
+class Extraction:
     """Orchestrates archive extraction with change detection.
 
     This orchestrator coordinates the extraction of tar.bz2 archives,
@@ -38,14 +38,14 @@ class ExtractionOrchestrator:
 
     def process_archives(
         self,
-        state: PipelineStateManager,
-        datasets: dict[str, RawDatasetMetadata],
-        reporter: PipelineReporter | None = None,
+        state: StateManager,
+        datasets: dict[str, DatasetMetadata],
+        reporter: Reporter | None = None,
     ) -> dict[str, dict]:
         """Process archives and detect file-level changes.
 
         Args:
-            state: Pipeline state manager
+            state: State manager
             datasets: Dictionary of datasets to process (key = dataset filename)
             reporter: Optional reporter for progress and results
 
@@ -98,11 +98,11 @@ class ExtractionOrchestrator:
     def _extract_dataset(
         self,
         dataset_key: str,
-        dataset_metadata: RawDatasetMetadata,
+        dataset_metadata: DatasetMetadata,
         archive_path: Path,
         extract_dir: Path,
-        state: PipelineStateManager,
-        reporter: PipelineReporter | None,
+        state: StateManager,
+        reporter: Reporter | None,
     ) -> dict:
         """Extract a single dataset with progress reporting.
 
