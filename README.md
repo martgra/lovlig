@@ -60,10 +60,10 @@ graph LR
     D -->|Detect Changes| E[Added/Modified/Removed]
 ```
 
-1. **Download** - Fetches dataset archives from Lovdata's API (only downloads datasets with updated `lastModified` timestamps)
+1. **Download** - Fetches dataset archives from Lovdata's API
 2. **Extract** - Uncompresses tar.bz2 files into organized directories
-3. **Track** - Computes xxHash for each file and compares against previous hashes (required because Lovdata doesn't provide file-level checksums)
-4. **Report** - Shows you exactly what changed since last run (added, modified, or removed files)
+3. **Track** - Computes xxHash for each file and compares against previous hashes
+4. **Report** - Shows exactly what changed since last run
 
 ### Your Data Structure
 
@@ -276,22 +276,17 @@ settings = Settings(
 
 ## Limitations
 
-- **All changes detected** - No distinction between legal amendments and editorial corrections
+See "Important: How Lovdata's API Works" section above for context on API constraints.
+
 - **Not real-time** - Requires periodic polling (no webhooks available)
-- **Storage needed** - Local hashes stored in `state.json` (~5-15 MB), plus extracted XML files (several GB)
-- **Change detection only** - Tool identifies *that* a file changed, not *what* changed or *why*
-- **Full dataset downloads** - Even if one file changed, the entire dataset archive must be downloaded
+- **Storage needed** - Local hashes in `state.json` (~5-15 MB) + extracted XML files (several GB)
+- **Change detection only** - Identifies *that* a file changed, not *what* or *why*
+- **Full dataset downloads** - Entire archives must be re-downloaded when any file changes
 
 ## FAQ
 
 **Q: What happens if a sync is interrupted?**
 A: State is only saved after successful completion. Just run again.
-
-**Q: Do I need to download everything every time?**
-A: No. After the first run, only datasets with updated `lastModified` timestamps are downloaded.
-
-**Q: Why so many change notifications?**
-A: Both regulatory changes and Lovdata editorial updates trigger notifications. The API doesn't distinguish between them.
 
 **Q: Can I filter to only track specific laws?**
 A: Yes, use the query API after syncing to filter by status, dataset name, or file patterns. See examples in "Use as Python SDK" section above.
