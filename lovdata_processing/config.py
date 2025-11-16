@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     @field_validator("dataset_filter", mode="before")
     @classmethod
-    def parse_null_filter(cls, v: str | None) -> str | None:
+    def parse_null_filter(_cls, v: str | None) -> str | None:
         """Convert 'null' string to None."""
         if isinstance(v, str) and v.lower() in ("null", "none", ""):
             return None
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
 
     @field_validator("raw_data_dir", "extracted_data_dir", "state_file", mode="after")
     @classmethod
-    def create_dirs(cls, v: Path) -> Path:
+    def create_dirs(_cls, v: Path) -> Path:
         """Create directories if they don't exist."""
         if v.name.endswith(".json"):  # state_file
             v.parent.mkdir(parents=True, exist_ok=True)

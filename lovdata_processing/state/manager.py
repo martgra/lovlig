@@ -97,7 +97,7 @@ class PipelineStateManager:
         else:
             self.data.raw_datasets[dataset_key] = metadata
 
-    def __exit__(self, exc_type, exc_value, traceback) -> bool:
+    def __exit__(self, exc_type, _exc_value, _traceback) -> bool:
         """Exit context manager, saving state if no exceptions occurred.
 
         Args:
@@ -124,7 +124,7 @@ class PipelineStateManager:
         return False  # Don't suppress exceptions
 
     @classmethod
-    def _sanitize_raw_state(cls, payload: Any) -> dict[str, Any]:
+    def _sanitize_raw_state(_cls, payload: Any) -> dict[str, Any]:
         """Ensure schema-compatibility of state data."""
         if not isinstance(payload, dict):
             return {"raw_datasets": {}}

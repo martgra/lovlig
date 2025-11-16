@@ -37,7 +37,7 @@ run:
 	uv run python lovdata_processing/__main__.py
 
 secrets: .secrets.baseline
-	uv run detect-secrets scan --baseline .secrets.baseline
+	uv run detect-secrets scan --baseline .secrets.baseline  # pragma: allowlist secret
 
 .secrets.baseline:
 	uv run detect-secrets scan > .secrets.baseline
