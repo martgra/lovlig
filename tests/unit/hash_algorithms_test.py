@@ -2,7 +2,7 @@
 
 import pytest
 
-from lovdata_processing.acquisition.extract import compute_file_hash
+from lovdata_processing.operations.extract import compute_file_hash
 from lovdata_processing.domain.models import FileMetadata, FileStatus
 
 

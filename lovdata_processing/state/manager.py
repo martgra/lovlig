@@ -7,12 +7,12 @@ from typing import Any
 import orjson
 from atomicwrites import atomic_write
 
-from lovdata_processing.domain.models import FileMetadata, PipelineState, RawDatasetMetadata
+from lovdata_processing.domain.models import DatasetMetadata, FileMetadata, State
 
 logger = Logger(__file__)
 
 
-class PipelineStateManager:
+class StateManager:
     """Context manager for tracking file state using hashes.
 
     Maintains a JSON file mapping file paths to their hash values,
@@ -32,10 +32,10 @@ class PipelineStateManager:
             path: Path to the state JSON file
         """
         self.path = Path(path)
-        self.data: PipelineState = PipelineState()
+        self.data: State = State()
         self._loaded = False
 
-    def __enter__(self) -> "PipelineStateManager":
+    def __enter__(self) -> "StateManager":
         """Enter context manager, loading existing state if available."""
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -44,7 +44,7 @@ class PipelineStateManager:
                 content = self.path.read_bytes()
                 json_data = orjson.loads(content)
                 sanitized = self._sanitize_raw_state(json_data)
-                self.data = PipelineState.model_validate(sanitized)
+                self.data = State.model_validate(sanitized)
             except orjson.JSONDecodeError as e:
                 logger.error(f"Failed to parse state file {self.path}: {e}")
                 raise
@@ -82,7 +82,7 @@ class PipelineStateManager:
         else:
             logger.warning(f"Dataset {dataset_key} not in state, cannot update file metadata")
 
-    def update_dataset_metadata(self, dataset_key: str, metadata: RawDatasetMetadata) -> None:
+    def update_dataset_metadata(self, dataset_key: str, metadata: DatasetMetadata) -> None:
         """Update or add dataset metadata.
 
         Args:

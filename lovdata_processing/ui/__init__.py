@@ -1,5 +1,5 @@
 """UI."""
 
-from lovdata_processing.ui.reporter import PipelineReporter
+from lovdata_processing.ui.reporter import Reporter
 
-__all__ = ["PipelineReporter"]
+__all__ = ["Reporter"]

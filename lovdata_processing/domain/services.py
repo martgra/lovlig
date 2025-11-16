@@ -5,10 +5,10 @@ from pathlib import Path
 
 from lovdata_processing.domain.models import (
     ArchiveChangeSet,
+    DatasetMetadata,
     FileMetadata,
     FileStatus,
-    PipelineState,
-    RawDatasetMetadata,
+    State,
 )
 from lovdata_processing.domain.types import ExtractionProgressHook
 
@@ -18,9 +18,9 @@ class DatasetUpdateService:
 
     @staticmethod
     def get_datasets_to_update(
-        current_datasets: dict[str, RawDatasetMetadata],
-        previous_datasets: dict[str, RawDatasetMetadata],
-    ) -> dict[str, RawDatasetMetadata]:
+        current_datasets: dict[str, DatasetMetadata],
+        previous_datasets: dict[str, DatasetMetadata],
+    ) -> dict[str, DatasetMetadata]:
         """Determine which datasets need updating based on last_modified.
 
         Args:
@@ -91,7 +91,7 @@ class FileQueryService:
 
     @staticmethod
     def get_files_by_filter(
-        state: PipelineState,
+        state: State,
         status: str | None = None,
         dataset: str | None = None,
         limit: int | None = None,
@@ -99,7 +99,7 @@ class FileQueryService:
         """Query files from state with optional filters.
 
         Args:
-            state: Pipeline state to query
+            state: State to query
             status: Filter by status (added, modified, unchanged, removed, or changed)
             dataset: Filter by dataset name (partial match)
             limit: Maximum number of results to return
@@ -139,11 +139,11 @@ class FileQueryService:
         return results
 
     @staticmethod
-    def get_dataset_statistics(state: PipelineState, dataset: str | None = None) -> dict[str, dict]:
+    def get_dataset_statistics(state: State, dataset: str | None = None) -> dict[str, dict]:
         """Calculate statistics for datasets in state.
 
         Args:
-            state: Pipeline state to analyze
+            state: State to analyze
             dataset: Optional dataset name filter (partial match)
 
         Returns:
@@ -181,13 +181,11 @@ class FileManagementService:
     """Service for managing files in pipeline state and on disk."""
 
     @staticmethod
-    def prune_removed_files(
-        state: PipelineState, extract_root_dir: Path, dry_run: bool = False
-    ) -> dict:
+    def prune_removed_files(state: State, extract_root_dir: Path, dry_run: bool = False) -> dict:
         """Remove files marked as REMOVED from state and disk.
 
         Args:
-            state: Pipeline state to modify
+            state: State to modify
             extract_root_dir: Root directory containing extracted datasets
             dry_run: If True, only report what would be done without making changes
 

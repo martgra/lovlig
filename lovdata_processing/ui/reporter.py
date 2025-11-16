@@ -13,8 +13,8 @@ from rich.progress import (
 from lovdata_processing.domain.models import ArchiveChangeSet
 
 
-class PipelineReporter:
-    """Pipeline reporter with rich progress bars and formatted output."""
+class Reporter:
+    """Reporter with rich progress bars and formatted output."""
 
     CHANGE_PREVIEW_LIMIT = 10
 

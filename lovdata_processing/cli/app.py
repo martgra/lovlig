@@ -4,16 +4,16 @@ import asyncio
 
 import typer
 
-from lovdata_processing.acquisition.download import download_datasets, get_dataset_metadata
 from lovdata_processing.config import Settings
 from lovdata_processing.domain.services import (
     DatasetUpdateService,
     FileManagementService,
     FileQueryService,
 )
-from lovdata_processing.orchestrators import DatasetSyncOrchestrator
-from lovdata_processing.state.manager import PipelineStateManager
-from lovdata_processing.ui import PipelineReporter
+from lovdata_processing.operations.download import download_datasets, fetch_datasets
+from lovdata_processing.orchestrators import DatasetSync
+from lovdata_processing.state.manager import StateManager
+from lovdata_processing.ui import Reporter
 from lovdata_processing.ui.tables import (
     create_file_list_table,
     create_statistics_table,
@@ -33,12 +33,12 @@ def main(ctx: typer.Context) -> None:
         raise typer.Exit()
 
 
-def _perform_download(force: bool, reporter: PipelineReporter, config: Settings) -> None:
+def _perform_download(force: bool, reporter: Reporter, config: Settings) -> None:
     """Download datasets according to the current state."""
     update_service = DatasetUpdateService()
 
-    with PipelineStateManager(config.state_file) as state:
-        datasets = get_dataset_metadata(config.api_url, config.dataset_filter)
+    with StateManager(config.state_file) as state:
+        datasets = fetch_datasets(config.api_url, config.dataset_filter)
         datasets_to_update = (
             datasets
             if force
@@ -78,7 +78,7 @@ def _perform_download(force: bool, reporter: PipelineReporter, config: Settings)
 @app.command()
 def download(force: bool = typer.Option(False, "--force", help="Redownload all datasets")):
     """Download new or updated datasets without extraction."""
-    reporter = PipelineReporter()
+    reporter = Reporter()
     config = Settings()
     _perform_download(force, reporter, config)
 
@@ -86,9 +86,9 @@ def download(force: bool = typer.Option(False, "--force", help="Redownload all d
 @app.command()
 def update(force: bool = typer.Option(False, "--force", help="Force redownload before update")):
     """Download and extract datasets, updating state."""
-    reporter = PipelineReporter()
+    reporter = Reporter()
     config = Settings()
-    orchestrator = DatasetSyncOrchestrator(config)
+    orchestrator = DatasetSync(config)
     orchestrator.sync_datasets(reporter=reporter, force_download=force)
 
 
@@ -106,7 +106,7 @@ def files_list(
 ):
     """List files in state with optional filtering."""
     config = Settings()
-    reporter = PipelineReporter()
+    reporter = Reporter()
 
     valid_statuses = {"added", "modified", "unchanged", "removed", "changed"}
     if status and status not in valid_statuses:
@@ -116,7 +116,7 @@ def files_list(
         )
         raise typer.Exit(1)
 
-    with PipelineStateManager(config.state_file) as state:
+    with StateManager(config.state_file) as state:
         # Use service to query files
         query_service = FileQueryService()
         results = query_service.get_files_by_filter(
@@ -142,9 +142,9 @@ def files_stats(
 ):
     """Show statistics about files in state."""
     config = Settings()
-    reporter = PipelineReporter()
+    reporter = Reporter()
 
-    with PipelineStateManager(config.state_file) as state:
+    with StateManager(config.state_file) as state:
         # Use service to calculate statistics
         query_service = FileQueryService()
         dataset_stats = query_service.get_dataset_statistics(state=state.data, dataset=dataset)
@@ -166,9 +166,9 @@ def files_prune(
 ):
     """Remove files marked as REMOVED from state and disk."""
     config = Settings()
-    reporter = PipelineReporter()
+    reporter = Reporter()
 
-    with PipelineStateManager(config.state_file) as state:
+    with StateManager(config.state_file) as state:
         # Use service to perform prune operation
         management_service = FileManagementService()
         result = management_service.prune_removed_files(

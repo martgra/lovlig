@@ -5,8 +5,8 @@ from pathlib import Path
 
 import orjson
 
-from lovdata_processing.domain.models import FileMetadata, RawDatasetMetadata
-from lovdata_processing.state.manager import PipelineStateManager
+from lovdata_processing.domain.models import FileMetadata, DatasetMetadata
+from lovdata_processing.state.manager import StateManager
 
 
 def _write_state(file_path: Path, payload: dict) -> None:
@@ -36,7 +36,7 @@ def test_state_manager_prunes_fast_hash(tmp_path):
     }
     _write_state(state_file, payload)
 
-    with PipelineStateManager(state_file) as manager:
+    with StateManager(state_file) as manager:
         files = manager.get_file_metadata("dataset1")
         assert set(files.keys()) == {"file1.xml"}
         file_metadata = files["file1.xml"]
@@ -55,12 +55,12 @@ def test_state_manager_handles_invalid_payload(tmp_path):
     state_file = tmp_path / "corrupt.json"
     _write_state(state_file, {"raw_datasets": ["not-a-dict"]})
 
-    with PipelineStateManager(state_file) as manager:
+    with StateManager(state_file) as manager:
         assert manager.get_file_metadata("dataset1") == {}
         assert manager.data.raw_datasets == {}
         manager.update_dataset_metadata(
             "dataset1",
-            RawDatasetMetadata(
+            DatasetMetadata(
                 filename=Path("dataset1.tar.bz2"),
                 last_modified=datetime(2024, 1, 1),
                 files={},

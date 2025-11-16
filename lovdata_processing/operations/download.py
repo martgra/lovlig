@@ -9,14 +9,14 @@ from pathlib import Path
 import httpx
 import requests
 
-from lovdata_processing.domain.models import RawDatasetMetadata
+from lovdata_processing.domain.models import DatasetMetadata
 from lovdata_processing.domain.types import DownloadProgressHook
 
 
-def get_dataset_metadata(
+def fetch_datasets(
     api_url: str = "https://api.lovdata.no", name_filter: str | None = "gjeldende"
-) -> dict[str, RawDatasetMetadata]:
-    """Return datasets from API.
+) -> dict[str, DatasetMetadata]:
+    """Fetch dataset metadata from Lovdata API.
 
     Args:
         api_url: Base URL for the Lovdata API
@@ -35,7 +35,7 @@ def get_dataset_metadata(
         datasets = [d for d in datasets if name_filter in d.get("filename", "")]
 
     return {
-        dataset.get("filename"): RawDatasetMetadata(
+        dataset.get("filename"): DatasetMetadata(
             filename=dataset.get("filename"), last_modified=dataset.get("lastModified")
         )
         for dataset in datasets
@@ -69,7 +69,7 @@ async def download_file(
 
 
 async def download_datasets(
-    datasets: dict[str, RawDatasetMetadata],
+    datasets: dict[str, DatasetMetadata],
     dest_dir: Path,
     progress_hooks: dict[str, DownloadProgressHook] | None = None,
     api_url: str = "https://api.lovdata.no",

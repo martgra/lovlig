@@ -8,8 +8,8 @@ import pytest
 from lovdata_processing.domain.models import (
     FileMetadata,
     FileStatus,
-    PipelineState,
-    RawDatasetMetadata,
+    State,
+    DatasetMetadata,
 )
 from lovdata_processing.domain.services import (
     DatasetUpdateService,
@@ -25,7 +25,7 @@ class TestDatasetUpdateService:
         """New datasets should be flagged for update."""
         service = DatasetUpdateService()
         current = {
-            "dataset1.tar.bz2": RawDatasetMetadata(
+            "dataset1.tar.bz2": DatasetMetadata(
                 filename=Path("dataset1.tar.bz2"),
                 last_modified=datetime(2024, 1, 1),
                 files={},
@@ -42,14 +42,14 @@ class TestDatasetUpdateService:
         """Datasets with updated timestamps should be flagged."""
         service = DatasetUpdateService()
         current = {
-            "dataset1.tar.bz2": RawDatasetMetadata(
+            "dataset1.tar.bz2": DatasetMetadata(
                 filename=Path("dataset1.tar.bz2"),
                 last_modified=datetime(2024, 1, 2),  # Changed
                 files={},
             )
         }
         previous = {
-            "dataset1.tar.bz2": RawDatasetMetadata(
+            "dataset1.tar.bz2": DatasetMetadata(
                 filename=Path("dataset1.tar.bz2"),
                 last_modified=datetime(2024, 1, 1),
                 files={},
@@ -65,14 +65,14 @@ class TestDatasetUpdateService:
         service = DatasetUpdateService()
         timestamp = datetime(2024, 1, 1)
         current = {
-            "dataset1.tar.bz2": RawDatasetMetadata(
+            "dataset1.tar.bz2": DatasetMetadata(
                 filename=Path("dataset1.tar.bz2"),
                 last_modified=timestamp,
                 files={},
             )
         }
         previous = {
-            "dataset1.tar.bz2": RawDatasetMetadata(
+            "dataset1.tar.bz2": DatasetMetadata(
                 filename=Path("dataset1.tar.bz2"),
                 last_modified=timestamp,
                 files={},

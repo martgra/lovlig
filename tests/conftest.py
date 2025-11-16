@@ -10,8 +10,8 @@ import pytest
 from lovdata_processing.domain.models import (
     FileMetadata,
     FileStatus,
-    PipelineState,
-    RawDatasetMetadata,
+    State,
+    DatasetMetadata,
 )
 
 
@@ -46,12 +46,12 @@ def sample_tar_archive(tmp_path):
 def sample_datasets():
     """Create sample dataset metadata."""
     return {
-        "test-dataset.tar.bz2": RawDatasetMetadata(
+        "test-dataset.tar.bz2": DatasetMetadata(
             filename=Path("test-dataset.tar.bz2"),
             last_modified=datetime(2024, 1, 1, 12, 0, 0),
             files={},
         ),
-        "another-dataset.tar.bz2": RawDatasetMetadata(
+        "another-dataset.tar.bz2": DatasetMetadata(
             filename=Path("another-dataset.tar.bz2"),
             last_modified=datetime(2024, 1, 2, 12, 0, 0),
             files={},
@@ -62,9 +62,9 @@ def sample_datasets():
 @pytest.fixture
 def sample_pipeline_state():
     """Create a sample pipeline state with files."""
-    return PipelineState(
+    return State(
         raw_datasets={
-            "dataset1.tar.bz2": RawDatasetMetadata(
+            "dataset1.tar.bz2": DatasetMetadata(
                 filename=Path("dataset1.tar.bz2"),
                 last_modified=datetime(2024, 1, 1),
                 files={
@@ -91,7 +91,7 @@ def sample_pipeline_state():
                     ),
                 },
             ),
-            "dataset2.tar.bz2": RawDatasetMetadata(
+            "dataset2.tar.bz2": DatasetMetadata(
                 filename=Path("dataset2.tar.bz2"),
                 last_modified=datetime(2024, 1, 2),
                 files={

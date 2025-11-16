@@ -13,10 +13,10 @@ from lovdata_processing.cli.app import app
 from lovdata_processing.domain.models import (
     FileMetadata,
     FileStatus,
-    PipelineState,
-    RawDatasetMetadata,
+    State,
+    DatasetMetadata,
 )
-from lovdata_processing.state.manager import PipelineStateManager
+from lovdata_processing.state.manager import StateManager
 
 
 @pytest.fixture
@@ -30,9 +30,9 @@ def populated_state_file(tmp_path):
     """Create a state file with test data."""
     state_file = tmp_path / "state.json"
 
-    state = PipelineState(
+    state = State(
         raw_datasets={
-            "dataset1.tar.bz2": RawDatasetMetadata(
+            "dataset1.tar.bz2": DatasetMetadata(
                 filename=Path("dataset1.tar.bz2"),
                 last_modified=datetime(2024, 1, 1),
                 files={
@@ -62,7 +62,7 @@ def populated_state_file(tmp_path):
         }
     )
 
-    with PipelineStateManager(state_file) as manager:
+    with StateManager(state_file) as manager:
         manager.data = state
 
     return state_file
@@ -141,9 +141,9 @@ class TestFilesPruneCommand:
     def test_prune_dry_run_shows_what_would_be_removed(self, cli_runner, tmp_path):
         """Dry-run should show files that would be pruned."""
         state_file = tmp_path / "state.json"
-        state = PipelineState(
+        state = State(
             raw_datasets={
-                "dataset1.tar.bz2": RawDatasetMetadata(
+                "dataset1.tar.bz2": DatasetMetadata(
                     filename=Path("dataset1.tar.bz2"),
                     last_modified=datetime(2024, 1, 1),
                     files={
@@ -159,7 +159,7 @@ class TestFilesPruneCommand:
             }
         )
 
-        with PipelineStateManager(state_file) as manager:
+        with StateManager(state_file) as manager:
             manager.data = state
 
         with patch("lovdata_processing.cli.app.Settings") as mock_config:
@@ -184,9 +184,9 @@ class TestFilesPruneCommand:
         removed_file = dataset_dir / "removed.xml"
         removed_file.write_text("<doc>To be removed</doc>")
 
-        state = PipelineState(
+        state = State(
             raw_datasets={
-                "dataset1.tar.bz2": RawDatasetMetadata(
+                "dataset1.tar.bz2": DatasetMetadata(
                     filename=Path("dataset1.tar.bz2"),
                     last_modified=datetime(2024, 1, 1),
                     files={
@@ -209,7 +209,7 @@ class TestFilesPruneCommand:
             }
         )
 
-        with PipelineStateManager(state_file) as manager:
+        with StateManager(state_file) as manager:
             manager.data = state
 
         with patch("lovdata_processing.cli.app.Settings") as mock_config:
@@ -221,7 +221,7 @@ class TestFilesPruneCommand:
             assert result.exit_code == 0
 
         # Verify file was removed from state
-        with PipelineStateManager(state_file) as manager:
+        with StateManager(state_file) as manager:
             files = manager.get_file_metadata("dataset1.tar.bz2")
             assert "removed.xml" not in files
             assert "kept.xml" in files

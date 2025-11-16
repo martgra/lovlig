@@ -4,7 +4,7 @@ This module provides functionality for downloading and extracting Lovdata datase
 
 Public API:
     Download operations:
-        - get_dataset_metadata: Fetch dataset list from API
+        - fetch_datasets: Fetch dataset list from API
         - download_datasets: Async batch download
 
     Extract operations:
@@ -13,8 +13,8 @@ Public API:
         - compute_file_hash: Fast file hashing with xxHash
 """
 
-from lovdata_processing.acquisition.download import download_datasets, get_dataset_metadata
-from lovdata_processing.acquisition.extract import (
+from lovdata_processing.operations.download import download_datasets, fetch_datasets
+from lovdata_processing.operations.extract import (
     compute_file_hash,
     extract_tar_bz2,
     extract_tar_bz2_incremental,
@@ -22,7 +22,7 @@ from lovdata_processing.acquisition.extract import (
 
 __all__ = [
     # Download operations
-    "get_dataset_metadata",
+    "fetch_datasets",
     "download_datasets",
     # Extract operations
     "extract_tar_bz2",
