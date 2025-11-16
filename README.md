@@ -19,6 +19,20 @@ This tool solves that:
 
 Built for developers building legal tech, researchers analyzing legal data, or anyone who needs reliable, up-to-date Norwegian legal documents.
 
+## Important: How Lovdata's API Works
+
+Lovdata provides bulk dataset downloads—not individual file checksums or change feeds. This means:
+
+- **Filenames are stable identifiers** - `LOV-1999-07-02-63.xml` never changes, even when the law's content is amended
+- **No file-level change detection** - The API only provides dataset-level `lastModified` timestamps
+- **All changes are detected** - Both regulatory amendments and Lovdata's editorial updates trigger change notifications
+
+**Why content hashing?** Since the API doesn't provide checksums or change indicators for individual files, this tool computes xxHash for each file to detect modifications. This is the only reliable way to identify which specific documents changed.
+
+**Result:** You get precise change detection, but cannot programmatically distinguish between legal amendments and editorial updates. Manual review recommended for critical changes.
+
+Official API docs: https://api.lovdata.no/publicData
+
 ## Quick Start
 
 ```bash
@@ -48,8 +62,8 @@ graph LR
 
 1. **Download** - Fetches dataset archives from Lovdata's API
 2. **Extract** - Uncompresses tar.bz2 files into organized directories
-3. **Track** - Computes xxHash for each file (10x faster than SHA256)
-4. **Report** - Shows you exactly what changed since last run
+3. **Track** - Computes xxHash for each file and compares against previous hashes
+4. **Report** - Shows exactly what changed since last run
 
 ### Your Data Structure
 
@@ -260,19 +274,22 @@ settings = Settings(
 | `LOVDATA_DATASET_FILTER`           | `gjeldende` | Filter datasets by name (or `null` = all) |
 | `LOVDATA_MAX_DOWNLOAD_CONCURRENCY` | `4`         | How many files to download in parallel    |
 
+## Limitations
+
+See "Important: How Lovdata's API Works" section above for context on API constraints.
+
+- **Not real-time** - Requires periodic polling (no webhooks available)
+- **Storage needed** - Local hashes in `state.json` (~5-15 MB) + extracted XML files (several GB)
+- **Change detection only** - Identifies *that* a file changed, not *what* or *why*
+- **Full dataset downloads** - Entire archives must be re-downloaded when any file changes
+
 ## FAQ
 
-**Q: What happens if a sync is interrupted?**  
-A: State is only saved after successful completion. Interrupted syncs leave previous state intact—just run again.
+**Q: What happens if a sync is interrupted?**
+A: State is only saved after successful completion. Just run again.
 
-**Q: Can I process files while syncing?**  
-A: Not recommended. Sync first, then query state for new files and process them separately.
-
-**Q: Do I need to download everything every time?**  
-A: No. After the first run, only changed datasets are downloaded.
-
-**Q: What if Lovdata's API changes?**  
-A: The `acquisition` layer isolates API details. Updates happen there without touching business logic.
+**Q: Can I filter to only track specific laws?**
+A: Yes, use the query API after syncing to filter by status, dataset name, or file patterns. See examples in "Use as Python SDK" section above.
 
 ## License
 
