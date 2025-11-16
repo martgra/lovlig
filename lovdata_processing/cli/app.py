@@ -1,6 +1,7 @@
 """Typer-based CLI for lovdata processing."""
 
 import asyncio
+import json
 
 import typer
 
@@ -103,6 +104,7 @@ def files_list(
     ),
     dataset: str = typer.Option(None, "--dataset", "-d", help="Filter by dataset name"),
     limit: int = typer.Option(None, "--limit", "-n", help="Limit number of results"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ):
     """List files in state with optional filtering."""
     config = Settings()
@@ -124,21 +126,39 @@ def files_list(
         )
 
         if not results:
-            reporter.console.print("[dim]No matching files found[/dim]")
+            if json_output:
+                typer.echo(json.dumps([], ensure_ascii=False))
+            else:
+                reporter.console.print("[dim]No matching files found[/dim]")
             return
 
-        # Use table utility to render results
-        table = create_file_list_table(results)
-        reporter.console.print(table)
+        # Output as JSON or table
+        if json_output:
+            # Convert datetime to ISO format for JSON serialization
+            json_results = [
+                {
+                    **result,
+                    "last_changed": result["last_changed"].isoformat()
+                    if result["last_changed"]
+                    else None,
+                }
+                for result in results
+            ]
+            typer.echo(json.dumps(json_results, indent=2, ensure_ascii=False))
+        else:
+            # Use table utility to render results
+            table = create_file_list_table(results)
+            reporter.console.print(table)
 
-        # Show summary
-        summary = format_status_summary(results)
-        reporter.console.print(f"\n[bold]Summary:[/bold] {summary}")
+            # Show summary
+            summary = format_status_summary(results)
+            reporter.console.print(f"\n[bold]Summary:[/bold] {summary}")
 
 
 @files_app.command("stats")
 def files_stats(
     dataset: str = typer.Option(None, "--dataset", "-d", help="Filter by dataset name"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ):
     """Show statistics about files in state."""
     config = Settings()
@@ -150,12 +170,19 @@ def files_stats(
         dataset_stats = query_service.get_dataset_statistics(state=state.data, dataset=dataset)
 
         if not dataset_stats:
-            reporter.console.print("[dim]No matching datasets found[/dim]")
+            if json_output:
+                typer.echo(json.dumps({}, ensure_ascii=False))
+            else:
+                reporter.console.print("[dim]No matching datasets found[/dim]")
             return
 
-        # Use table utility to render statistics
-        table = create_statistics_table(dataset_stats)
-        reporter.console.print(table)
+        # Output as JSON or table
+        if json_output:
+            typer.echo(json.dumps(dataset_stats, indent=2, ensure_ascii=False))
+        else:
+            # Use table utility to render statistics
+            table = create_statistics_table(dataset_stats)
+            reporter.console.print(table)
 
 
 @files_app.command("prune")

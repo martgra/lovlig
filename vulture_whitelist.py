@@ -1,0 +1,5 @@
+cls  # unused variable (lovdata_processing/config.py:46)
+cls  # unused variable (lovdata_processing/config.py:54)
+exc_value  # unused variable (lovdata_processing/state/manager.py:100)
+traceback  # unused variable (lovdata_processing/state/manager.py:100)
+cls  # unused variable (lovdata_processing/state/manager.py:127)

@@ -25,6 +25,15 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install prek
+        run: uv tool install prek
+
+      - name: Run all hooks
+        run: uv tool run prek run --all-files --hook-stage manual
+
       - name: Build package
         run: uv build
 
