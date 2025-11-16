@@ -181,9 +181,7 @@ class FileManagementService:
     """Service for managing files in pipeline state and on disk."""
 
     @staticmethod
-    def prune_removed_files(
-        state: State, extract_root_dir: Path, dry_run: bool = False
-    ) -> dict:
+    def prune_removed_files(state: State, extract_root_dir: Path, dry_run: bool = False) -> dict:
         """Remove files marked as REMOVED from state and disk.
 
         Args:
