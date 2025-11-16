@@ -57,10 +57,10 @@ from lovdata_processing.config import Settings
 # Domain models
 from lovdata_processing.domain import (
     ArchiveChangeSet,
+    DatasetMetadata,
     FileMetadata,
     FileStatus,
     State,
-    DatasetMetadata,
 )
 
 # Orchestrators

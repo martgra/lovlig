@@ -5,10 +5,10 @@ from pathlib import Path
 
 from lovdata_processing.domain.models import (
     ArchiveChangeSet,
+    DatasetMetadata,
     FileMetadata,
     FileStatus,
     State,
-    DatasetMetadata,
 )
 from lovdata_processing.domain.types import ExtractionProgressHook
 

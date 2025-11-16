@@ -2,10 +2,10 @@
 
 from lovdata_processing.domain.models import (
     ArchiveChangeSet,
+    DatasetMetadata,
     FileMetadata,
     FileStatus,
     State,
-    DatasetMetadata,
 )
 from lovdata_processing.domain.types import DownloadProgressHook, ExtractionProgressHook
 

@@ -4,13 +4,13 @@ import asyncio
 
 import typer
 
-from lovdata_processing.operations.download import download_datasets, fetch_datasets
 from lovdata_processing.config import Settings
 from lovdata_processing.domain.services import (
     DatasetUpdateService,
     FileManagementService,
     FileQueryService,
 )
+from lovdata_processing.operations.download import download_datasets, fetch_datasets
 from lovdata_processing.orchestrators import DatasetSync
 from lovdata_processing.state.manager import StateManager
 from lovdata_processing.ui import Reporter

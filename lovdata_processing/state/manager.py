@@ -7,7 +7,7 @@ from typing import Any
 import orjson
 from atomicwrites import atomic_write
 
-from lovdata_processing.domain.models import FileMetadata, State, DatasetMetadata
+from lovdata_processing.domain.models import DatasetMetadata, FileMetadata, State
 
 logger = Logger(__file__)
 
