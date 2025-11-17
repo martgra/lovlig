@@ -1,17 +1,14 @@
 """Typer-based CLI for lovdata processing."""
 
-import asyncio
 import json
 
 import typer
 
 from lovdata_processing.config import Settings
 from lovdata_processing.domain.services import (
-    DatasetUpdateService,
     FileManagementService,
     FileQueryService,
 )
-from lovdata_processing.operations.download import download_datasets, fetch_datasets
 from lovdata_processing.orchestrators import DatasetSync
 from lovdata_processing.state.manager import StateManager
 from lovdata_processing.ui import Reporter
@@ -32,56 +29,6 @@ def main(ctx: typer.Context) -> None:
     if ctx.invoked_subcommand is None:
         typer.echo(ctx.get_help())
         raise typer.Exit()
-
-
-def _perform_download(force: bool, reporter: Reporter, config: Settings) -> None:
-    """Download datasets according to the current state."""
-    update_service = DatasetUpdateService()
-
-    with StateManager(config.state_file) as state:
-        datasets = fetch_datasets(config.api_url, config.dataset_filter)
-        datasets_to_update = (
-            datasets
-            if force
-            else update_service.get_datasets_to_update(datasets, state.data.raw_datasets)
-        )
-
-        if not datasets_to_update:
-            reporter.report_datasets_to_update(0)
-            typer.echo("All datasets already up to date")
-            return
-
-        reporter.report_datasets_to_update(len(datasets_to_update))
-
-        # Create progress hooks for downloads
-        progress_hooks = {}
-        for _, dataset_metadata in datasets_to_update.items():
-            filename = str(dataset_metadata.filename)
-            progress_hooks[filename] = reporter.create_download_progress_hook(filename)
-
-        # Download with progress tracking
-        with reporter.download_context():
-            asyncio.run(
-                download_datasets(
-                    datasets_to_update,
-                    config.raw_data_dir,
-                    progress_hooks,
-                    config.api_url,
-                    config.max_download_concurrency,
-                )
-            )
-
-        # Persist the latest dataset metadata so future runs know timestamps
-        for dataset_key, dataset_metadata in datasets.items():
-            state.update_dataset_metadata(dataset_key, dataset_metadata)
-
-
-@app.command()
-def download(force: bool = typer.Option(False, "--force", help="Redownload all datasets")):
-    """Download new or updated datasets without extraction."""
-    reporter = Reporter()
-    config = Settings()
-    _perform_download(force, reporter, config)
 
 
 @app.command()

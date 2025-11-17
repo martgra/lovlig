@@ -62,9 +62,15 @@ class DatasetSync:
 
             # Step 3: Download updated datasets
             if datasets_to_update:
-                self._download_datasets(datasets_to_update, reporter)
+                self._download_datasets(datasets_to_update, len(datasets), reporter)
+                # Report which datasets were skipped (no download needed)
+                skipped = set(datasets.keys()) - set(datasets_to_update.keys())
+                for dataset_key in skipped:
+                    reporter.report_dataset_up_to_date(dataset_key)
             else:
-                reporter.report_datasets_to_update(0)
+                # Report all datasets as up to date
+                for dataset_key in datasets:
+                    reporter.report_dataset_up_to_date(dataset_key)
 
             # Step 4: Remove datasets from state that no longer exist in API
             self._cleanup_removed_datasets(datasets, state, reporter)
@@ -86,15 +92,17 @@ class DatasetSync:
     def _download_datasets(
         self,
         datasets_to_update: dict,
+        total_datasets: int,
         reporter: Reporter,
     ) -> None:
         """Download datasets with progress tracking.
 
         Args:
             datasets_to_update: Datasets that need to be downloaded
+            total_datasets: Total number of datasets being tracked
             reporter: Progress reporter
         """
-        reporter.report_datasets_to_update(len(datasets_to_update))
+        reporter.report_datasets_to_update(len(datasets_to_update), total_datasets)
 
         with reporter.download_context():
             # Create progress hooks for downloads

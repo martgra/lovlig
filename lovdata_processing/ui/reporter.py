@@ -31,10 +31,40 @@ class Reporter:
         self._extraction_progress: Progress | None = None
         self._extraction_task_id: int | None = None
 
-    def report_datasets_to_update(self, count: int) -> None:
-        """Report how many datasets need updating."""
+    def report_datasets_to_update(self, count: int, total: int | None = None) -> None:
+        """Report how many datasets need updating.
+
+        Args:
+            count: Number of datasets to download
+            total: Total number of datasets (optional)
+        """
         if not self.silent:
-            self.console.print(f"Downloading {count} updated datasets...")
+            if total and total > count:
+                self.console.print(
+                    f"Downloading {count} of {total} dataset(s) "
+                    f"({total - count} already up to date)..."
+                )
+            else:
+                self.console.print(f"Downloading {count} updated dataset(s)...")
+
+    def report_dataset_skipped(self, dataset_key: str, stage: str) -> None:
+        """Report when a dataset is skipped during processing.
+
+        Args:
+            dataset_key: Name of the dataset
+            stage: Stage that was skipped (e.g., 'download', 'extraction')
+        """
+        if not self.silent:
+            self.console.print(f"{dataset_key} - [dim]No changes detected[/dim]")
+
+    def report_dataset_up_to_date(self, dataset_key: str) -> None:
+        """Report when a dataset is already up to date.
+
+        Args:
+            dataset_key: Name of the dataset
+        """
+        if not self.silent:
+            self.console.print(f"{dataset_key:<45} [green]Up to date[/green]")
 
     def create_download_progress_hook(self, filename: str):
         """Create a progress hook for downloading a specific file."""

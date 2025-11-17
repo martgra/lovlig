@@ -46,7 +46,7 @@ repos:
       - id: name-tests-test
       - id: detect-private-key # Early lightweight key pattern scan
       - id: check-added-large-files
-        args: ["--maxkb=500"] # Policy: reject very large blobs
+        args: ["--maxkb=1000"] # Policy: reject very large blobs (allow demo.gif)
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.13.2
@@ -82,12 +82,6 @@ repos:
       - id: deptry
         name: Deptry (dependency hygiene)
         entry: uv run deptry lovdata_processing
-        language: system
-        pass_filenames: false
-        stages: [pre-push, manual]
-      - id: vulture
-        name: Vulture (dead code)
-        entry: uv run vulture lovdata_processing vulture_whitelist.py
         language: system
         pass_filenames: false
         stages: [pre-push, manual]

@@ -1,10 +1,12 @@
-# lovdata-processing
+# Lovlig - lovdata API simplified.
 
 ![CI](https://github.com/martgra/lovlig/actions/workflows/ci.yaml/badge.svg?branch=main)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue?logo=python&logoColor=white)
 [![Copier](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/copier-org/copier/master/img/badge/badge-grayscale-inverted-border-orange.json)](https://github.com/copier-org/copier)
 
 **Keep Norwegian legal documents in sync. Automatically.**
+
+![Demo](docs/assets/demo.gif)
 
 ## Why This Exists
 
@@ -40,25 +42,15 @@ Official API docs: https://api.lovdata.no/publicData
 uv sync
 
 # Sync everything (first run downloads all datasets)
-uv run lov run
+uv run lov update
 
 # Second run? Only processes changes
-uv run lov run
+uv run lov update
 ```
 
 That's it. Your datasets are in `data/extracted/`, and you know exactly what changed.
 
 ## How It Works
-
-### The Workflow
-
-```mermaid
-graph LR
-    A[Lovdata API] -->|Download| B[data/raw/*.tar.bz2]
-    B -->|Extract| C[data/extracted/*/]
-    C -->|Track| D[data/state.json]
-    D -->|Detect Changes| E[Added/Modified/Removed]
-```
 
 1. **Download** - Fetches dataset archives from Lovdata's API
 2. **Extract** - Uncompresses tar.bz2 files into organized directories
@@ -67,7 +59,7 @@ graph LR
 
 ### Your Data Structure
 
-After running `lov run`, you get:
+After running `lov update`, you get:
 
 ```
 data/
@@ -128,9 +120,6 @@ Only want "gjeldende" (current) laws?
 ```bash
 # Set in .env
 LOVDATA_DATASET_FILTER=gjeldende
-
-# Or via code
-uv run lov run --filter gjeldende
 ```
 
 ### Force Re-download
@@ -138,7 +127,7 @@ uv run lov run --filter gjeldende
 Already have datasets but want fresh copies?
 
 ```bash
-uv run lov download --force
+uv run lov update --force
 ```
 
 ## Use as Python SDK
@@ -162,10 +151,10 @@ sync_datasets()
 ### Custom Paths and Filters
 
 ```python
-from lovdata_processing import sync_datasets, PipelineConfig
+from lovdata_processing import sync_datasets, Settings
 from pathlib import Path
 
-config = PipelineConfig(
+config = Settings(
     dataset_filter="gjeldende",              # Only current laws
     raw_data_dir=Path("my_data/archives"),
     extracted_data_dir=Path("my_data/docs"),
@@ -180,17 +169,17 @@ sync_datasets(config=config)
 Perfect for automation—run this after syncing to see what's new:
 
 ```python
-from lovdata_processing import PipelineConfig, PipelineStateManager, FileStatus
+from lovdata_processing import Settings, StateManager, FileStatus
 from lovdata_processing.domain.services import FileQueryService
 
-config = PipelineConfig()
+config = Settings()
 query = FileQueryService()
 
-with PipelineStateManager(config.state_file) as state:
+with StateManager(config.state_file) as state:
     # Get files added in the last sync
-    new_files = query.get_files_by_status(
-        state.data,
-        FileStatus.ADDED,
+    new_files = query.get_files_by_filter(
+        state=state.data,
+        status="added",
         limit=100
     )
 
@@ -206,22 +195,23 @@ with PipelineStateManager(config.state_file) as state:
 ### Build a Processing Pipeline
 
 ```python
-from lovdata_processing import DatasetSyncOrchestrator, PipelineConfig
+from lovdata_processing import DatasetSync, Settings
 from pathlib import Path
 
 # 1. Configure
-config = PipelineConfig(dataset_filter="gjeldende")
-orchestrator = DatasetSyncOrchestrator(config)
+config = Settings(dataset_filter="gjeldende")
+orchestrator = DatasetSync(config)
 
 # 2. Sync datasets
 orchestrator.sync_datasets(force_download=False)
 
 # 3. Process new files
+from lovdata_processing import StateManager
 from lovdata_processing.domain.services import FileQueryService
 query = FileQueryService()
 
-with PipelineStateManager(config.state_file) as state:
-    added_files = query.get_files_by_status(state.data, FileStatus.ADDED)
+with StateManager(config.state_file) as state:
+    added_files = query.get_files_by_filter(state=state.data, status="added")
 
     for file_meta in added_files:
         xml_path = config.extracted_data_dir / file_meta.path
@@ -280,7 +270,7 @@ See "Important: How Lovdata's API Works" section above for context on API constr
 
 - **Not real-time** - Requires periodic polling (no webhooks available)
 - **Storage needed** - Local hashes in `state.json` (~5-15 MB) + extracted XML files (several GB)
-- **Change detection only** - Identifies *that* a file changed, not *what* or *why*
+- **Change detection only** - Identifies _that_ a file changed, not _what_ or _why_
 - **Full dataset downloads** - Entire archives must be re-downloaded when any file changes
 
 ## FAQ
