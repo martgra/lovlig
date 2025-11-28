@@ -5,13 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from lovdata_processing.domain.models import (
+from lovlig.domain.models import (
     FileMetadata,
     FileStatus,
     State,
     DatasetMetadata,
 )
-from lovdata_processing.domain.services import (
+from lovlig.domain.services import (
     DatasetUpdateService,
     FileManagementService,
     FileQueryService,

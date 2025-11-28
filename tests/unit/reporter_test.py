@@ -6,10 +6,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from lovdata_processing.config import Settings
-from lovdata_processing.domain.models import DatasetMetadata
-from lovdata_processing.orchestrators import DatasetSync, Extraction
-from lovdata_processing.ui import Reporter
+from lovlig.config import Settings
+from lovlig.domain.models import DatasetMetadata
+from lovlig.orchestrators import DatasetSync, Extraction
+from lovlig.ui import Reporter
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ def test_process_archives_with_silent_reporter(mock_state, sample_datasets, tmp_
     mock_state.get_file_metadata.return_value = {}
 
     # Mock the extractor to return fake data
-    with patch("lovdata_processing.orchestrators.extraction.extract_tar_bz2_incremental") as mock_extractor:
+    with patch("lovlig.orchestrators.extraction.extract_tar_bz2_incremental") as mock_extractor:
         mock_extractor.return_value = ({}, mock_changeset)
 
         reporter = Reporter(silent=True)
@@ -97,7 +97,7 @@ def test_process_archives_without_reporter(mock_state, sample_datasets, tmp_path
     mock_state.get_file_metadata.return_value = {}
 
     # Mock the extractor to return fake data
-    with patch("lovdata_processing.orchestrators.extraction.extract_tar_bz2_incremental") as mock_extractor:
+    with patch("lovlig.orchestrators.extraction.extract_tar_bz2_incremental") as mock_extractor:
         mock_extractor.return_value = ({}, mock_changeset)
 
         # Execute without reporter
@@ -155,9 +155,9 @@ def test_process_archives_missing_file(mock_state, sample_datasets, tmp_path):
     mock_state.update_file_metadata.assert_not_called()
 
 
-@patch("lovdata_processing.orchestrators.dataset_sync.fetch_datasets")
-@patch("lovdata_processing.state.manager.StateManager")
-@patch("lovdata_processing.orchestrators.dataset_sync.download_datasets")
+@patch("lovlig.orchestrators.dataset_sync.fetch_datasets")
+@patch("lovlig.state.manager.StateManager")
+@patch("lovlig.orchestrators.dataset_sync.download_datasets")
 def test_run_pipeline_with_silent_reporter(
     mock_download, mock_state_manager_class, mock_get_metadata, tmp_path
 ):

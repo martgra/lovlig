@@ -9,14 +9,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 from typer.testing import CliRunner
 
-from lovdata_processing.cli.app import app
-from lovdata_processing.domain.models import (
+from lovlig.cli.app import app
+from lovlig.domain.models import (
     FileMetadata,
     FileStatus,
     State,
     DatasetMetadata,
 )
-from lovdata_processing.state.manager import StateManager
+from lovlig.state.manager import StateManager
 
 
 @pytest.fixture
@@ -75,7 +75,7 @@ class TestFilesListCommand:
         """List files filtered by ADDED status."""
         monkeypatch.setenv("STATE_FILE", str(populated_state_file))
 
-        with patch("lovdata_processing.cli.app.Settings") as mock_config:
+        with patch("lovlig.cli.app.Settings") as mock_config:
             mock_config.return_value.state_file = populated_state_file
 
             result = cli_runner.invoke(app, ["files", "list", "--status", "added"])
@@ -87,7 +87,7 @@ class TestFilesListCommand:
 
     def test_list_files_with_limit(self, cli_runner, populated_state_file):
         """List files with limit applied."""
-        with patch("lovdata_processing.cli.app.Settings") as mock_config:
+        with patch("lovlig.cli.app.Settings") as mock_config:
             mock_config.return_value.state_file = populated_state_file
 
             result = cli_runner.invoke(app, ["files", "list", "--limit", "1"])
@@ -98,7 +98,7 @@ class TestFilesListCommand:
 
     def test_list_shows_summary(self, cli_runner, populated_state_file):
         """List command should show summary."""
-        with patch("lovdata_processing.cli.app.Settings") as mock_config:
+        with patch("lovlig.cli.app.Settings") as mock_config:
             mock_config.return_value.state_file = populated_state_file
 
             result = cli_runner.invoke(app, ["files", "list"])
@@ -112,7 +112,7 @@ class TestFilesStatsCommand:
 
     def test_stats_shows_all_datasets(self, cli_runner, populated_state_file):
         """Stats command should show statistics for all datasets."""
-        with patch("lovdata_processing.cli.app.Settings") as mock_config:
+        with patch("lovlig.cli.app.Settings") as mock_config:
             mock_config.return_value.state_file = populated_state_file
 
             result = cli_runner.invoke(app, ["files", "stats"])
@@ -124,7 +124,7 @@ class TestFilesStatsCommand:
 
     def test_stats_shows_correct_counts(self, cli_runner, populated_state_file):
         """Stats should show correct file counts by status."""
-        with patch("lovdata_processing.cli.app.Settings") as mock_config:
+        with patch("lovlig.cli.app.Settings") as mock_config:
             mock_config.return_value.state_file = populated_state_file
 
             result = cli_runner.invoke(app, ["files", "stats"])
@@ -162,7 +162,7 @@ class TestFilesPruneCommand:
         with StateManager(state_file) as manager:
             manager.data = state
 
-        with patch("lovdata_processing.cli.app.Settings") as mock_config:
+        with patch("lovlig.cli.app.Settings") as mock_config:
             mock_config.return_value.state_file = state_file
             mock_config.return_value.extracted_data_dir = tmp_path / "extracted"
 
@@ -212,7 +212,7 @@ class TestFilesPruneCommand:
         with StateManager(state_file) as manager:
             manager.data = state
 
-        with patch("lovdata_processing.cli.app.Settings") as mock_config:
+        with patch("lovlig.cli.app.Settings") as mock_config:
             mock_config.return_value.state_file = state_file
             mock_config.return_value.extracted_data_dir = extracted_dir
 

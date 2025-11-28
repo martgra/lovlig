@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from lovdata_processing.domain.models import FileMetadata, FileStatus
-from lovdata_processing.operations.extract import (
+from lovlig.domain.models import FileMetadata, FileStatus
+from lovlig.operations.extract import (
     compute_file_hash,
     extract_tar_bz2_incremental,
 )

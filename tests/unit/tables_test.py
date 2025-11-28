@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from lovdata_processing.ui.tables import (
+from lovlig.ui.tables import (
     create_file_list_table,
     create_statistics_table,
     format_status_summary,

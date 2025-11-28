@@ -1,7 +1,12 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v1.0.1
+_commit: v1.0.4
 _src_path: gh:martgra/python_template
-project_name: lovdata-processing
+github_username: martgra
+project_name: lovlig
+use_agents: true
 use_devcontainer: true
 use_github_actions: true
+use_proxy: true
 use_vscode: true
+user_email: martgra@gmail.com
+user_name: Martin Gran

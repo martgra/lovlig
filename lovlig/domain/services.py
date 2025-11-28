@@ -3,14 +3,14 @@
 from datetime import datetime
 from pathlib import Path
 
-from lovdata_processing.domain.models import (
+from lovlig.domain.models import (
     ArchiveChangeSet,
     DatasetMetadata,
     FileMetadata,
     FileStatus,
     State,
 )
-from lovdata_processing.domain.types import ExtractionProgressHook
+from lovlig.domain.types import ExtractionProgressHook
 
 
 class DatasetUpdateService:

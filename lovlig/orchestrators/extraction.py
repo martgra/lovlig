@@ -6,12 +6,12 @@ Coordinates the extraction of datasets and file-level change detection.
 from functools import partial
 from pathlib import Path
 
-from lovdata_processing.config import Settings
-from lovdata_processing.domain.models import DatasetMetadata
-from lovdata_processing.domain.services import ArchiveProcessingService
-from lovdata_processing.operations.extract import extract_tar_bz2_incremental
-from lovdata_processing.state.manager import StateManager
-from lovdata_processing.ui import Reporter
+from lovlig.config import Settings
+from lovlig.domain.models import DatasetMetadata
+from lovlig.domain.services import ArchiveProcessingService
+from lovlig.operations.extract import extract_tar_bz2_incremental
+from lovlig.state.manager import StateManager
+from lovlig.ui import Reporter
 
 
 class Extraction:
