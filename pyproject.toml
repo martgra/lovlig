@@ -1,11 +1,16 @@
 [project]
 name = "lovlig"
 dynamic = ["version"]
-description = ""
+description = "A stateful wrapper around api.lovdata.no endpoints"
 authors = [{ name = "Martin Gran", email = "martgra@gmail.com" }]
 requires-python = ">=3.13"
 readme = "README.md"
-
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "atomicwrites>=1.4.1",
     "httpx>=0.28.1",
@@ -17,6 +22,10 @@ dependencies = [
     "typer>=0.20.0",
     "xxhash>=3.4.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/martgra/lovlig"
+Issues = "https://github.com/martgra/lovlig/issues"
 
 [project.scripts]
 lov = "lovlig.cli.app:app"
