@@ -4,15 +4,15 @@ import json
 
 import typer
 
-from lovdata_processing.config import Settings
-from lovdata_processing.domain.services import (
+from lovlig.config import Settings
+from lovlig.domain.services import (
     FileManagementService,
     FileQueryService,
 )
-from lovdata_processing.orchestrators import DatasetSync
-from lovdata_processing.state.manager import StateManager
-from lovdata_processing.ui import Reporter
-from lovdata_processing.ui.tables import (
+from lovlig.orchestrators import DatasetSync
+from lovlig.state.manager import StateManager
+from lovlig.ui import Reporter
+from lovlig.ui.tables import (
     create_file_list_table,
     create_statistics_table,
     format_status_summary,

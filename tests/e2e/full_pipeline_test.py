@@ -12,9 +12,9 @@ from pathlib import Path
 
 import pytest
 
-from lovdata_processing.domain.models import FileMetadata, FileStatus, DatasetMetadata
-from lovdata_processing.operations.extract import extract_tar_bz2
-from lovdata_processing.state.manager import StateManager
+from lovlig.domain.models import FileMetadata, FileStatus, DatasetMetadata
+from lovlig.operations.extract import extract_tar_bz2
+from lovlig.state.manager import StateManager
 
 
 def create_tar_bz2_with_files(archive_path: Path, files: dict[str, bytes]) -> None:

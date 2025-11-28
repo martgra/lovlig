@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from lovdata_processing.domain.models import (
+from lovlig.domain.models import (
     FileMetadata,
     FileStatus,
     State,

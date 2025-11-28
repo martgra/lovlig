@@ -13,8 +13,8 @@ Public API:
         - compute_file_hash: Fast file hashing with xxHash
 """
 
-from lovdata_processing.operations.download import download_datasets, fetch_datasets
-from lovdata_processing.operations.extract import (
+from lovlig.operations.download import download_datasets, fetch_datasets
+from lovlig.operations.extract import (
     compute_file_hash,
     extract_tar_bz2,
     extract_tar_bz2_incremental,

@@ -76,7 +76,7 @@ from pathlib import Path
 import xxhash
 from pydantic import BaseModel
 
-from lovdata_processing.domain import FileMetadata
+from lovlig.domain import FileMetadata
 
 # 3. __all__ export (define public API)
 __all__ = ["public_function", "PublicClass"]
@@ -160,7 +160,7 @@ uv run pytest
 uv run pytest tests/unit/config_test.py::TestClass::test_method -v
 
 # With coverage
-uv run pytest --cov=lovdata_processing
+uv run pytest --cov=lovlig
 ```
 
 ## Performance

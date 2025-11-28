@@ -10,7 +10,7 @@ from rich.progress import (
     TransferSpeedColumn,
 )
 
-from lovdata_processing.domain.models import ArchiveChangeSet
+from lovlig.domain.models import ArchiveChangeSet
 
 
 class Reporter:

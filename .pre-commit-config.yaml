@@ -1,5 +1,6 @@
 minimum_pre_commit_version: "3.5.0"
-default_stages: [commit, manual]
+default_stages: [pre-commit, manual]
+default_install_hook_types: [pre-commit, pre-push]
 
 ############################################################
 # Global Exclusions
@@ -17,7 +18,7 @@ exclude: |
 ############################################################
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0 # Latest stable as of 2025-09
+    rev: v6.0.0 # Latest stable as of 2025-09
     hooks:
       - id: trailing-whitespace
         name: Trim Trailing Whitespace
@@ -49,7 +50,7 @@ repos:
         args: ["--maxkb=1000"] # Policy: reject very large blobs (allow demo.gif)
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.2
+    rev: v0.14.6
     hooks:
       - id: ruff
         name: Ruff Linter (autofix)
@@ -81,7 +82,13 @@ repos:
         stages: [pre-push, manual]
       - id: deptry
         name: Deptry (dependency hygiene)
-        entry: uv run deptry lovdata_processing
+        entry: uv run deptry lovlig
+        language: system
+        pass_filenames: false
+        stages: [pre-push, manual]
+      - id: vulture
+        name: Vulture (dead code)
+        entry: uv run vulture
         language: system
         pass_filenames: false
         stages: [pre-push, manual]
@@ -96,9 +103,15 @@ repos:
         stages: [pre-push, manual]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.8.22
+    rev: 0.9.13
     hooks:
       - id: uv-lock
         name: Validate pyproject / lock
         stages: [pre-push, manual]
         pass_filenames: false
+
+  - repo: https://github.com/pysentry/pysentry-pre-commit
+    rev: v0.3.12
+    hooks:
+      - id: pysentry # default pysentry settings
+        stages: [pre-push, manual]

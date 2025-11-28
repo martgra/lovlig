@@ -135,7 +135,7 @@ uv run lov update --force
 ### Simple: Just Sync Everything
 
 ```python
-from lovdata_processing import sync_datasets
+from lovlig import sync_datasets
 
 # Downloads, extracts, tracks changes - all in one call
 sync_datasets()
@@ -151,7 +151,7 @@ sync_datasets()
 ### Custom Paths and Filters
 
 ```python
-from lovdata_processing import sync_datasets, Settings
+from lovlig import sync_datasets, Settings
 from pathlib import Path
 
 config = Settings(
@@ -169,8 +169,8 @@ sync_datasets(config=config)
 Perfect for automation—run this after syncing to see what's new:
 
 ```python
-from lovdata_processing import Settings, StateManager, FileStatus
-from lovdata_processing.domain.services import FileQueryService
+from lovlig import Settings, StateManager, FileStatus
+from lovlig.domain.services import FileQueryService
 
 config = Settings()
 query = FileQueryService()
@@ -195,7 +195,7 @@ with StateManager(config.state_file) as state:
 ### Build a Processing Pipeline
 
 ```python
-from lovdata_processing import DatasetSync, Settings
+from lovlig import DatasetSync, Settings
 from pathlib import Path
 
 # 1. Configure
@@ -206,8 +206,8 @@ orchestrator = DatasetSync(config)
 orchestrator.sync_datasets(force_download=False)
 
 # 3. Process new files
-from lovdata_processing import StateManager
-from lovdata_processing.domain.services import FileQueryService
+from lovlig import StateManager
+from lovlig.domain.services import FileQueryService
 query = FileQueryService()
 
 with StateManager(config.state_file) as state:
@@ -249,7 +249,7 @@ LOVDATA_MAX_DOWNLOAD_CONCURRENCY=4  # Parallel downloads
 ### Programmatic Configuration
 
 ```python
-from lovdata_processing import Settings
+from lovlig import Settings
 
 # Override environment variables
 settings = Settings(

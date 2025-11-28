@@ -5,12 +5,12 @@ Coordinates the complete end-to-end dataset synchronization workflow.
 
 import asyncio
 
-from lovdata_processing.config import Settings
-from lovdata_processing.domain.services import DatasetUpdateService
-from lovdata_processing.operations.download import download_datasets, fetch_datasets
-from lovdata_processing.orchestrators.extraction import Extraction
-from lovdata_processing.state.manager import StateManager
-from lovdata_processing.ui import Reporter
+from lovlig.config import Settings
+from lovlig.domain.services import DatasetUpdateService
+from lovlig.operations.download import download_datasets, fetch_datasets
+from lovlig.orchestrators.extraction import Extraction
+from lovlig.state.manager import StateManager
+from lovlig.ui import Reporter
 
 
 class DatasetSync:

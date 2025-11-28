@@ -2,8 +2,8 @@
 
 import pytest
 
-from lovdata_processing.operations.extract import compute_file_hash
-from lovdata_processing.domain.models import FileMetadata, FileStatus
+from lovlig.operations.extract import compute_file_hash
+from lovlig.domain.models import FileMetadata, FileStatus
 
 
 class TestHashAlgorithms:

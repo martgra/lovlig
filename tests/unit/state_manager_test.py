@@ -5,8 +5,8 @@ from pathlib import Path
 
 import orjson
 
-from lovdata_processing.domain.models import FileMetadata, DatasetMetadata
-from lovdata_processing.state.manager import StateManager
+from lovlig.domain.models import FileMetadata, DatasetMetadata
+from lovlig.state.manager import StateManager
 
 
 def _write_state(file_path: Path, payload: dict) -> None:

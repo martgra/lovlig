@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from lovdata_processing.config import Settings
-from lovdata_processing.domain.models import FileStatus, DatasetMetadata
-from lovdata_processing.domain.services import ArchiveProcessingService
-from lovdata_processing.operations.extract import extract_tar_bz2_incremental
-from lovdata_processing.orchestrators import Extraction
-from lovdata_processing.state.manager import StateManager
+from lovlig.config import Settings
+from lovlig.domain.models import FileStatus, DatasetMetadata
+from lovlig.domain.services import ArchiveProcessingService
+from lovlig.operations.extract import extract_tar_bz2_incremental
+from lovlig.orchestrators import Extraction
+from lovlig.state.manager import StateManager
 
 
 class TestStateAndExtraction:

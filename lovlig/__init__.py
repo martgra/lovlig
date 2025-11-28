@@ -3,17 +3,17 @@
 A Python library for downloading, extracting, and tracking changes in Lovdata datasets.
 
 Quick Start (High-Level API):
-    >>> from lovdata_processing import sync_datasets
+    >>> from lovlig import sync_datasets
     >>> sync_datasets()  # Downloads and extracts all datasets
 
 Quick Start (SDK API):
-    >>> from lovdata_processing import DatasetSync, Settings
+    >>> from lovlig import DatasetSync, Settings
     >>> config = Settings(dataset_filter="gjeldende")
     >>> orchestrator = DatasetSync(config)
     >>> orchestrator.sync_datasets()
 
 Configuration:
-    >>> from lovdata_processing import Settings
+    >>> from lovlig import Settings
     >>> import os
     >>> os.environ["LOVDATA_API_TIMEOUT"] = "60"
     >>> config = Settings()  # Loads from environment
@@ -52,10 +52,10 @@ Public API:
 """
 
 # Configuration
-from lovdata_processing.config import Settings
+from lovlig.config import Settings
 
 # Domain models
-from lovdata_processing.domain import (
+from lovlig.domain import (
     ArchiveChangeSet,
     DatasetMetadata,
     FileMetadata,
@@ -64,13 +64,13 @@ from lovdata_processing.domain import (
 )
 
 # Orchestrators
-from lovdata_processing.orchestrators import DatasetSync, Extraction
+from lovlig.orchestrators import DatasetSync, Extraction
 
 # State management
-from lovdata_processing.state.manager import StateManager
+from lovlig.state.manager import StateManager
 
 # UI Reporters
-from lovdata_processing.ui import Reporter
+from lovlig.ui import Reporter
 
 __all__ = [
     # High-level functions
@@ -115,10 +115,10 @@ def sync_datasets(
         force_download: Redownload all datasets regardless of timestamps.
 
     Example:
-        >>> from lovdata_processing import sync_datasets
+        >>> from lovlig import sync_datasets
         >>> sync_datasets()  # Uses default config and Rich terminal output
 
-        >>> from lovdata_processing import sync_datasets, Settings
+        >>> from lovlig import sync_datasets, Settings
         >>> config = Settings(dataset_filter="gjeldende")
         >>> sync_datasets(config=config, force_download=True)
     """
@@ -142,8 +142,8 @@ def extract_archives(
         Dictionary mapping dataset keys to extraction results
 
     Example:
-        >>> from lovdata_processing import extract_archives, Settings
-        >>> from lovdata_processing.state.manager import StateManager
+        >>> from lovlig import extract_archives, Settings
+        >>> from lovlig.state.manager import StateManager
         >>> config = Settings()
         >>> with StateManager(config.state_file) as state:
         ...     results = extract_archives(datasets, config)

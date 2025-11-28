@@ -1,25 +1,20 @@
-version: "3.8"
 services:
   app:
-    user: vscode
     build:
-      # Use repository root as build context so we can pre-warm dependencies (pyproject/uv.lock)
-      context: ..
-      dockerfile: .devcontainer/Dockerfile
       args:
         VARIANT: 3.13-bookworm
-    volumes:
-      - ..:/workspace:cached # Shared workspace between host and devcontainer
-      - lovdata_processing_extensions:/home/vscode/.vscode-server/extensions # Storing extensions
-      - lovdata_processing_commandhistory:/home/vscode/commandhistory # Persistant command line history
-      - lovdata_processing_cache:/home/vscode/.cache # Caching poetry/pip wheels
-      - /workspace/.venv
-
-    # Overrides default command so things don't shut down after the process ends.
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
     command: sleep infinity
-
-# Volumes that are not shared between Host and Devcontainer must be listed here.
+    user: vscode
+    volumes:
+    - ../:/workspace:cached
+    - lovlig_extensions:/home/vscode/.vscode-server/extensions
+    - lovlig_commandhistory:/home/vscode/commandhistory
+    - lovlig_cache:/home/vscode/.cache
+    - /workspace/.venv
+version: '3.8'
 volumes:
-  lovdata_processing_extensions:
-  lovdata_processing_commandhistory:
-  lovdata_processing_cache:
+  lovlig_cache: null
+  lovlig_commandhistory: null
+  lovlig_extensions: null

@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from lovdata_processing.config import Settings
+from lovlig.config import Settings
 
 
 class TestSettings:

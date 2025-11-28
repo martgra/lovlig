@@ -15,8 +15,8 @@ from pathlib import Path
 
 import xxhash
 
-from lovdata_processing.domain.models import ArchiveChangeSet, FileMetadata, FileStatus
-from lovdata_processing.domain.types import ExtractionProgressHook
+from lovlig.domain.models import ArchiveChangeSet, FileMetadata, FileStatus
+from lovlig.domain.types import ExtractionProgressHook
 
 
 def _safe_extract_member(tar: tarfile.TarFile, member: tarfile.TarInfo, extract_dir: Path) -> None:

@@ -1,7 +1,8 @@
 {
-  // Dev Container definition for lovdata_processing
-  "name": "lovdata_processing",
-  "dockerComposeFile": ["docker-compose.yaml"],
+  "name": "lovlig",
+  "dockerComposeFile": [
+    "docker-compose.yaml"
+  ],
   "service": "app",
   "workspaceFolder": "/workspace",
   "features": {
@@ -27,7 +28,9 @@
       ]
     }
   },
-  "forwardPorts": [8888],
+  "forwardPorts": [
+    8888
+  ],
   "remoteUser": "vscode",
   "remoteEnv": {
     "PATH": "${containerEnv:PATH}:/home/vscode/.local/bin"

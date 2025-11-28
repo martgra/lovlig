@@ -9,8 +9,8 @@ from pathlib import Path
 import httpx
 import requests
 
-from lovdata_processing.domain.models import DatasetMetadata
-from lovdata_processing.domain.types import DownloadProgressHook
+from lovlig.domain.models import DatasetMetadata
+from lovlig.domain.types import DownloadProgressHook
 
 
 def fetch_datasets(
